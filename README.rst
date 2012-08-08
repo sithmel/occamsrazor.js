@@ -45,7 +45,7 @@ First of all we need some validator. A validator is a function that identify wha
 
 In this case we use attribute checking but we could use any kind of check.
 A validator returns a positive number if the function returns true or 0 if returns false.
-We can easily use validators to perform checks.
+We can easily use validators to perform checks::
 
     !!is_square(shape1); // false
     !!is_circle(shape1); // true
@@ -74,10 +74,10 @@ Conceptually an adapter is a function returning an object but, to say the truth,
 Why use adapters
 ================
 Maybe you are thinking why using an adapter when I can just extend an object using prototype or copying methods.
-There are two fundamentals problems with messing directly with the objects::
+There are two fundamentals problems with messing directly with the objects:
 
-    1 - the method we choose can conflicts with another with the same name
-    2 - it's difficult to test our extension in isolation
+    - the method we choose can conflicts with another with the same name
+    - it's difficult to test an extension in isolation
 
 Furthermore, using JSON, Javascript developers used to deal with objects without methods and inheritance chains. So using adapters can fit the needings to add behaviours to an object.
 
@@ -283,6 +283,7 @@ Validator function
 The function returned from occamsrazor.validator
 
 Syntax::
+
     validator(obj)
 
 Arguments:
@@ -324,6 +325,7 @@ Add a function and 0 or more validators to the adapter registry.
 If the adapter takes more than one argument (a multiadapter) we must pass an array with all the validators.
 
 Syntax::
+
     adapters.add(func)
 
     adapters.add(func, validator)
@@ -354,5 +356,3 @@ A bit of history
 If you already know Zope 3 and its component architecture you can find here many similarities.
 This library tries to provide the same functionality of the ZCA (zope component architecture). The approach however is quite different: it is based on duck typing validators instead of interfaces.
 I wrote about what I didn'like of Zope component architecture here (http://sithmel.blogspot.it/2012/05/occamsrazorjs-javascript-component.html)
-
-
