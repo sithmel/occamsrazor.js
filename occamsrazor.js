@@ -1,118 +1,121 @@
 /******************************************************************************
  *
- * occamsrazor.0.1.js
+ * occamsrazor.js
  * by Maurizio Lupo
  *
  * http://sithmel.blogspot.com
  * @sithmel
  * maurizio.lupo gmail com
  *
- * LGPL 3 license
- * 13 May 2012
+ * GPL license/MIT license
+ * 1 Aug 2012
  *
+ * version 1.0
  ******************************************************************************/
 
-(function () {
 
+(function (window) {
+    "use strict";
+    //returns a validator (function that returns a score)
     var validator = function () {
-            var validators = arguments;
-            var closure = function (obj) {
-                    var i, score, total = 0;
-                    for (i = 0; i < validators.length; i++) {
-                        score = validators[i](obj);
-                        if (!score) {
-                            return null;
-                        }
-                        total += score;
-                    }
-                    return total;
-                };
-            return closure;
-        };
-
-    var score_array_to_str = function (score) {
-            //convert an array in form [1,2,3] into a string "ABC" (easily sortable)
-            var i, s = ""; //output string
-            for (i = 0; i < score.length; i++) {
-                s += String.fromCharCode(64 + score[i]);
+        var validators = arguments;
+        var closure = function (obj) {
+            var i, score, total = 0;
+            for (i = 0; i < validators.length; i++) {
+                score = validators[i](obj);
+                if (!score) {
+                    return null;
+                }
+                total += score;
             }
-            return s;
+            return total;
         };
+        return closure;
+    };
 
+    //convert an array in form [1,2,3] into a string "ABC" (easily sortable)
+    var score_array_to_str = function (score) {
+        var i, s = ""; //output string
+        for (i = 0; i < score.length; i++) {
+            s += String.fromCharCode(64 + score[i]);
+        }
+        return s;
+    };
 
+    //given a list of arguments returns a function that compute a score
+    //from a list of validators
     var compute_score = function (args) {
-            var closure = function (validators) {
-                    var i, current_score, score = [];
-                    if (args.length !== validators.length) {
-                        return null;
-                    }
-                    for (i = 0; i < args.length; i++) {
-                        current_score = validators[i](args[i]);
-                        if (!current_score) {
-                            return null;
-                        }
-                        score.push(current_score);
-                    }
-                    return score;
-                };
-            return closure;
+        var closure = function (validators) {
+            var i, current_score, score = [];
+            if (args.length !== validators.length) {
+                return null;
+            }
+            for (i = 0; i < args.length; i++) {
+                current_score = validators[i](args[i]);
+                if (!current_score) {
+                    return null;
+                }
+                score.push(current_score);
+            }
+            return score;
         };
+        return closure;
+    };
 
-    /*
-     * Component registry
-     */
-    var Reg = function () {
-            this.components = {};
-        };
+    //add a function: func must be a function.
+    //validators is an array of validators
+    //functions is a list of obj (func, validators)
+    var add = function (functions, func, validators) {
 
-    /*Add a function*/
-    Reg.prototype.addFunc = function (name, func, validators) {
-        if (!validators){
+        if (typeof func !== 'function') {
+            throw new Error("The last argument MUST be a function");
+        }
+
+        if (!validators) {
             validators = [];
         }
-        if (!this.components[name]) {
-            this.components[name] = [];
+
+        if (typeof validators === 'function') {
+            validators = [validators];
         }
-        this.components[name].push({
+
+        functions.push({
             func: func,
             validators: validators
         });
-        return func;
     };
 
-    /*Delete a function*/
-    Reg.prototype.delFunc = function (name, func) {
-        //unregister a feature: registry.delFunc('monkeywrench')
-        //unregister a function : registry.delFunc('monkeywrench', myfunction)
-    
-        var i, components = [];
-        if (!func) {
-            delete this.components[name];
-            return;
+    //remove a func from functions
+    //functions is a list of obj (func, validators)
+    var remove = function (functions, func) {
+        var i, newfunctions = [];
+        if (typeof func !== 'function') {
+            throw new Error("The argument MUST be the function to delete");
         }
-        
-        for (i = 0; i < this.components[name].length; i++) {
-            if (this.components[name][i].func !== func){
-                components.push(this.components[name][i]);
+
+        for (i = 0; i < functions.length; i++) {
+            if (functions[i].func !== func) {
+                newfunctions.push(functions[i]);
             }
         }
-        this.components[name] = components;
+        return newfunctions;
     };
 
-    /*get all functions (private)*/
-    Reg.prototype._getAllFunc = function (name, args) {
+    //get all the functions that validates with args. Sorted by score
+    //functions is a list of obj (func, validators)
+    var filter_and_sort = function (args, functions) {
         var i, n, getScore, score, decorated_components = [],
-            func, validators, funcs = [],
-            components = this.components[name];
-        if (!components) {
+            func, validators, funcs = [];
+
+        if (!functions.length) {
             return [];
         }
         //get the score function
         getScore = compute_score(args);
         //decorate    
-        for (i = 0; i < components.length; i++) {
-            func = components[i].func;
-            validators = components[i].validators;
+        for (i = 0; i < functions.length; i++) {
+            func = functions[i].func;
+            validators = functions[i].validators;
             score = getScore(validators);
             //filter
             if (score) {
@@ -131,32 +134,65 @@
 
     };
 
-    /*It executes every function that match, returns all the results inside an array */
-    Reg.prototype.executeAllFunc = function (name, args) {
-        if (!args){
-            args = [];
+    //call the function with the highest score between those
+    //that match with the arguments.
+    //The arguments must match with the validators of a registered function
+    //functions is a list of obj (func, validators)
+    var getOne = function (args, functions) {
+        var funcs = filter_and_sort(args, functions);
+        if (!funcs.length) {
+            throw new Error("Function not found");
         }
+        return funcs[0].apply(null, args);
+    };
+
+    // call all the functions matching with the validators.
+    // Returns an array of results
+    var getAll = function (args, functions) {
         var i, out = [],
-            components = this._getAllFunc(name, args);
-        for (i = 0; i < components.length; i++) {
-            out.push(components[i].apply(null, args));
+            funcs = filter_and_sort(args, functions);
+        for (i = 0; i < funcs.length; i++) {
+            out.push(funcs[i].apply(null, args));
         }
         return out;
     };
 
-    /*It executes the most specific function, returns the result of the function */
-    Reg.prototype.executeFunc = function (name, args) {
-        if (!args){
-            args = [];
-        }
-        var components = this._getAllFunc(name, args);
-        return components[0].apply(null, args);
+    //main function
+    var occamsrazor = function () {
+        var functions = [],
+            occamsrazor = function () {
+                return getOne(Array.prototype.slice.call(arguments), functions);
+            };
+
+        occamsrazor.add = function (func, validators) {
+            add(functions, func, validators);
+            return occamsrazor;
+        };
+
+        occamsrazor.remove = function (func) {
+            functions = remove(functions, func);
+            return occamsrazor;
+        };
+
+        occamsrazor.all = function () {
+            return getAll(Array.prototype.slice.call(arguments), functions);
+        };
+
+
+        return occamsrazor;
     };
 
+    //public methods
+    occamsrazor.validator = validator;
+    occamsrazor.adapters = occamsrazor;
 
-    //public variables
-    window.OCCAMSRAZOR = {};
-    window.OCCAMSRAZOR.validator = validator;
-    window.OCCAMSRAZOR.Registry = Reg;
+    // Expose occamsrazor to the global object
+    window.occamsrazor = occamsrazor;
 
-}());
+    // Expose occamsrazor as an AMD module
+    if (typeof define === "function" && define.amd) {
+        define("occamsrazor", [], function () { return occamsrazor; });
+    }
+
+}(window));
+
