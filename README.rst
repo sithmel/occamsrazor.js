@@ -77,6 +77,7 @@ Maybe you are thinking why using an adapter when I can just extend an object usi
 There are two fundamentals problems with messing directly with the objects:
 
     - the method we choose can conflicts with another with the same name
+
     - it's difficult to test an extension in isolation
 
 Furthermore, using JSON, Javascript developers used to deal with objects without methods and inheritance chains. So using adapters can fit the needings to add behaviours to an object.
@@ -122,7 +123,7 @@ When you call the adapter registry it will returns the most specific adapter (ba
 Deleting an adapter
 ===================
 
-If you want to delete an adapter you can use the "remove" method.
+If you want to delete an adapter you can use the "remove" method::
 
     shapeMath.remove(rectangleMath);
 
@@ -268,11 +269,12 @@ Validator Factory.
 
 Syntax::
 
-    var validator = occamsrazor.validator([othervalidator, ]func)
+    var validator = occamsrazor.validator([othervalidator, ]func);
     
 Arguments:
 
     - func: a function with an argument (the object to validate). This function returns a boolean
+
     - othervalidator: (optional) a validator function to chain with the new function
 
 Returns a validator function.
@@ -280,11 +282,11 @@ Returns a validator function.
 Validator function
 ------------------
 
-The function returned from occamsrazor.validator
+The function returned from occamsrazor.validator.
 
 Syntax::
 
-    validator(obj)
+    validator(obj);
 
 Arguments:
     obj: any javascript value
@@ -293,7 +295,7 @@ Returns 0 or a positive number
 
 obj is passed to the function and othervalidator.
 If othervalidator returns a positive number and func returns true the function returns a positive number equals to the validator number plus 1.
-If othervalidator returns 0 or func returns false the validator returns 0
+If othervalidator returns 0 or func returns false the validator returns 0.
 
 occamsrazor.adapter
 -------------------
@@ -304,7 +306,7 @@ Syntax::
 
     var adapters = occamsrazor.adapters();
     
-    or
+or::
     
     var adapters = occamsrazor();
     
@@ -313,6 +315,7 @@ Adapter registry
 An function/object returned from occamsrazor.adapter
 
 Syntax::
+
     adapters([arg1, arg2 ...]);
 
 take 0 or more arguments. It calls the most specific function for the arguments.
