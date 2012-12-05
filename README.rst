@@ -245,31 +245,31 @@ This is very useful to manage events.
 Other information about the mediator design pattern are here: http://en.wikipedia.org/wiki/Mediator_pattern.
 Let's se an example::
 
-var pubsub = occamsrazor();
+    var pubsub = occamsrazor();
 
-// this validators validate the the type of the event
+    // this validators validate the the type of the event
 
-var is_selected_event = occamsrazor.validator(function (evt){
-    return evt === 'selected';
-});
+    var is_selected_event = occamsrazor.validator(function (evt){
+        return evt === 'selected';
+    });
 
-// the event is subscribed for the circle object only
+    // the event is subscribed for the circle object only
 
-pubsub.add(function (evt, circle){
-    console.log('Circle is selected');
-}, [is_selected_event,is_circle])
+    pubsub.add(function (evt, circle){
+        console.log('Circle is selected');
+    }, [is_selected_event,is_circle])
 
 
-pubsub.all('selected', circle);
+    pubsub.all('selected', circle);
 
 To make the syntax more intuitive these functions have the alias subscribe and publish::
 
-pubsub.subscribe(function (evt, circle){
-    console.log('Circle is selected');
-}, [is_selected_event,is_circle])
+    pubsub.subscribe(function (evt, circle){
+        console.log('Circle is selected');
+    }, [is_selected_event,is_circle])
 
 
-pubsub.publish('selected', circle);
+    pubsub.publish('selected', circle);
 
 
 Writing Validators
