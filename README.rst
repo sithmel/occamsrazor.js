@@ -358,10 +358,11 @@ adapters.all (alias adapters.publish)
 -------------------------------------
 
 Syntax::
+
     adapters.all([arg1, arg2 ...]);
 
-take 0 or more arguments. It calls every functions that match with the arguments.
-The results of the functions are returned as array.
+take 0 or more arguments. It calls every function that match with the arguments.
+The results of the functions are returned inside an array.
 
 adapters.add (alias adapters.subscribe)
 ---------------------------------------
