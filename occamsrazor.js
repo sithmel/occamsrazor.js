@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 
-(function (window) {
+(function () {
     "use strict";
     //returns a validator (function that returns a score)
     var validator = function () {
@@ -46,11 +46,11 @@
     //from a list of validators
     var compute_score = function (args) {
         var closure = function (validators) {
-            var i, current_score, score = [];
-            if (args.length !== validators.length) {
+            var i, l, current_score, score = [];
+            if (args.length < validators.length) {
                 return null;
             }
-            for (i = 0; i < args.length; i++) {
+            for (i = 0, l = validators.length; i < l; i++) {
                 current_score = validators[i](args[i]);
                 if (!current_score) {
                     return null;
@@ -120,7 +120,7 @@
             //filter
             if (score) {
                 // This hack leverages the lexicografy sorting order to sort
-                // the components by score
+                // the components by their scores
                 decorated_components.push([score_array_to_str(score), func]);
             }
         }
@@ -164,7 +164,7 @@
                 return getOne(Array.prototype.slice.call(arguments), functions);
             };
 
-        occamsrazor.add = function (func, validators) {
+        occamsrazor.subscribe = occamsrazor.add = function (func, validators) {
             add(functions, func, validators);
             return occamsrazor;
         };
@@ -174,7 +174,7 @@
             return occamsrazor;
         };
 
-        occamsrazor.all = function () {
+        occamsrazor.publish = occamsrazor.all = function () {
             return getAll(Array.prototype.slice.call(arguments), functions);
         };
 
@@ -186,13 +186,19 @@
     occamsrazor.validator = validator;
     occamsrazor.adapters = occamsrazor;
 
-    // Expose occamsrazor to the global object
-    window.occamsrazor = occamsrazor;
 
     // Expose occamsrazor as an AMD module
     if (typeof define === "function" && define.amd) {
         define("occamsrazor", [], function () { return occamsrazor; });
     }
+    // Expose occamsrazor as an UMD module (common.js)
+    else if (typeof exports === 'object'){
+        exports.occamsrazor = occamsrazor;
+    }
+    else if (typeof window === 'object'){
+        // Expose occamsrazor to the browser global object
+        window.occamsrazor = occamsrazor;
+    }
 
-}(window));
+}());
 

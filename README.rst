@@ -237,6 +237,39 @@ Imagine we need to build a sort of menu of shapes available on canvas::
 
 This will return an array containing all the adapters representing the shapes can be painted to a canvas.
 
+Implementing a Mediator with occamsrazor
+========================================
+The feature above allows to obtain a very useful "Mediator" object that implements pub sub and the adapter at the same time.
+This is very useful to manage events.
+Other information about the mediator design pattern are here: http://en.wikipedia.org/wiki/Mediator_pattern.
+Let's se an example::
+
+var pubsub = occamsrazor();
+
+// this validators validate the the type of the event
+
+var is_selected_event = occamsrazor.validator(function (evt){
+    return evt === 'selected';
+});
+
+// the event is subscribed for the circle object only
+
+pubsub.add(function (evt, circle){
+    console.log('Circle is selected');
+}, [is_selected_event,is_circle])
+
+
+pubsub.all('selected', circle);
+
+To make the syntax more intuitive these functions have the alias subscribe and publish::
+
+pubsub.subscribe(function (evt, circle){
+    console.log('Circle is selected');
+}, [is_selected_event,is_circle])
+
+
+pubsub.publish('selected', circle);
+
 
 Writing Validators
 ==================
@@ -310,7 +343,7 @@ Syntax::
     
 Adapter registry
 ================
-An function/object returned from occamsrazor.adapter
+A function/object returned from occamsrazor.adapter
 
 Syntax::
     adapters([arg1, arg2 ...]);
@@ -318,8 +351,17 @@ Syntax::
 take 0 or more arguments. It calls the most specific function for the arguments.
 
 
-adapters.add
-------------
+adapters.all (alias adapters.publish)
+-------------------------------------
+
+Syntax::
+    adapters.all([arg1, arg2 ...]);
+
+take 0 or more arguments. It calls every functions that match with the arguments.
+The results of the functions are returned as array.
+
+adapters.add (alias adapters.subscribe)
+---------------------------------------
 
 Add a function and 0 or more validators to the adapter registry. 
 If the adapter takes more than one argument (a multiadapter) we must pass an array with all the validators.

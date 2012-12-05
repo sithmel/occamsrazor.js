@@ -47,6 +47,7 @@ var player = occamsrazor()
 /*
 Tests
 */
+module( "Main" );
 
 test("Test validation (sometimes valid)", function() {
     ok( !! is_electricguitar(guitar) === false, "Guitar is not electric" );
@@ -93,12 +94,18 @@ test("Delete a function", function() {
     equals(results[0] , 'A solo with electric guitar and marshall' ,"Execute guitar function" );
 });
 
+test("Passing extra arguments", function() {
+    equals(player(guitar, 'extra') , 'Strumming with guitar' ,"Execute guitar function and passing an extra argument" );
+
+});
+
 
 /*
 Test without validators
 */
+module( "Test without validators" );
 
-var print_test = occamsrazor.adapter()
+var print_test = occamsrazor.adapters()
     .add(function (){return 'test'});
 
 test("Execute a function without arguments", function() {
@@ -108,9 +115,10 @@ test("Execute a function without arguments", function() {
 /*
 Test with more than one validators (and argument)
 */
+module( "Test more than one validator" );
 
 var is_number = occamsrazor.validator(function (obj){
-    return typeof obj === 'number' && ! isNaN(obj)
+    return typeof obj === 'number' && ! isNaN(obj);
 });
 
 var sum = occamsrazor()
@@ -120,5 +128,54 @@ var sum = occamsrazor()
 
 test("Execute a function with 3 arguments", function() {
     equals(sum(1,2,3) , 6 ,"Sum is 6" );
+});
+
+
+/*
+Use occamsrazor.js with observer pattern
+
+testing 
+*/
+module( "Pubsub" );
+
+var pubsub = occamsrazor();
+
+var is_play_event = occamsrazor.validator(function (evt){
+    return evt === 'play';
+});
+
+var is_stop_event = occamsrazor.validator(function (evt){
+    return evt === 'stop';
+});
+
+pubsub.subscribe(function (evt, instrument){
+    return 'Strumming ' + instrument.instrument_name;
+}, [is_play_event,is_guitar]);
+
+pubsub.subscribe(function (evt, instrument){
+    return instrument.instrument_name + ' solo';
+}, [is_play_event,is_electricguitar]);
+
+pubsub.subscribe(function (evt, instrument){
+    return 'stop playing';
+}, [is_stop_event,is_guitar]);
+
+
+test("Notify an event with 2 handler", function() {
+
+    var outputs = pubsub.publish('play', electricguitar);
+//    console.log(outputs);
+    ok(outputs.indexOf('Strumming electric guitar') !== -1, 'Called first handler');
+    ok(outputs.indexOf('electric guitar solo') !== -1, 'Called second handler');
+    equals(outputs.length, 2, 'Just 2 outputs');
+});
+
+test("Notify an event with 1 handler", function() {
+
+    var outputs = pubsub.publish('play', guitar);
+//    console.log(outputs);
+    ok(outputs.indexOf('Strumming guitar') !== -1, 'Called handler');
+    equals(outputs.length, 1, 'Just 1 output');
+
 });
 
