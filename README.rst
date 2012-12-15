@@ -76,9 +76,8 @@ Why use adapters
 Maybe you are thinking why using an adapter when I can just extend an object using prototype or copying methods.
 There are two fundamentals problems with messing directly with the objects:
 
-    - the method name we choose can conflicts with another one. Generally speaking patches can easily become incompatible between each others
-
-    - it's difficult to test an extension in isolation
+- the method name we choose can conflicts with another one. Generally speaking patches can easily become incompatible between each others
+- it's difficult to test an extension in isolation
 
 Furthermore, using JSON, Javascript developers deals with objects without methods and inheritance chains. So using adapters can fit the needings to add behaviours to an object.
 
@@ -97,7 +96,7 @@ We could write another validator::
 
 But this won't work correctly because both is_square and is_rectangle returns true and it's impossible to choose between them.
 We can solve this problem introducing a property of the validators: the specificity score.
-A validator can return a positive number to indicate how mush is specific.
+A validator can return a positive number to indicate how much is specific.
 We can use the utility function "chain" to chain together a group of validator. In this case we extends the "is_square" validator::
 
     var is_rectangle = occamsrazor.chain(is_square, function (obj){
@@ -206,7 +205,7 @@ The score of multiadapters is calculated sorting the score of the validators in 
 Passing parameters to the adapter
 =================================
 
-You should notice from the previous examples that adapters takes as arguments the object that pass the validation.
+You should notice from the previous examples that adapters takes as arguments the objects that pass the validation::
 
     shapeDraw.add([is_circle, is_canvas], function (circle, canvasContext){
     ...
@@ -218,7 +217,7 @@ In this case a "circle" object and a "canvasContext" object. You can also call t
     ...
     painter = shapeDraw(shape, context, 'red', 'black');
 
-These extra arguments are not considered during while choosing and adapter.
+These extra arguments are not considered for the purpose of selecting the adapter.
 
 Object registry
 ===============
