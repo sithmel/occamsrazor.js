@@ -379,9 +379,8 @@ Syntax::
     
 Arguments:
 
-    - func: a function with an argument (the object to validate). This function returns a boolean
-
-    - othervalidator: a validator function to chain with the new function
+- func: a function with an argument (the object to validate). This function returns a boolean
+- othervalidator: a validator function to chain with the new function
 
 Returns a validator function.
     
