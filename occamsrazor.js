@@ -8,16 +8,24 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 5 Dec 2012
+ * 15 Dec 2012
  *
- * version 1.1
+ * version 2.0
  ******************************************************************************/
 
 
 (function () {
     "use strict";
+
+    // add isArray if not natively available
+    if(!Array.isArray) {
+      Array.isArray = function (vArg) {
+        return Object.prototype.toString.call(vArg) === "[object Array]";
+      };
+    }
+    
     //returns a validator (function that returns a score)
-    var validator = function () {
+    var chain = function () {
         var validators = arguments;
         var closure = function (obj) {
             var i, score, total = 0;
@@ -26,13 +34,30 @@
                 if (!score) {
                     return null;
                 }
-                total += score;
+                total += score; // 1 + true === 2
             }
             return total;
         };
         return closure;
     };
 
+    var stringValidator = function (s){
+        if (typeof s !== 'string' && !(typeof s === 'object' && 'test' in s)){
+            throw new Error("A stringValidator argument must be a string or a regular expression");
+        }
+       
+        var closure = function (obj){
+            var str = obj.toString();
+            if (typeof s === 'string'){
+                return str === s; //it is a string
+            }
+            else if (typeof s === 'object' && 'test' in s){
+                return s.test(str);
+            }
+        };
+        return closure;
+    };
+    
     //convert an array in form [1,2,3] into a string "ABC" (easily sortable)
     var score_array_to_str = function (score) {
         var i, s = ""; //output string
@@ -66,7 +91,7 @@
     //validators is an array of validators
     //functions is a list of obj (func, validators)
     var add = function (functions, func, validators) {
-
+        var i;        
         if (typeof func !== 'function') {
             throw new Error("The last argument MUST be a function");
         }
@@ -74,9 +99,13 @@
         if (!validators) {
             validators = [];
         }
-
-        if (typeof validators === 'function') {
+        if (!Array.isArray(validators)){
             validators = [validators];
+        }
+        for (i = 0; i < validators.length; i++){
+            if (typeof validators[i] !== 'function'){
+                validators[i] = stringValidator(validators[i]);
+            }
         }
 
         functions.push({
@@ -138,21 +167,21 @@
     //that match with the arguments.
     //The arguments must match with the validators of a registered function
     //functions is a list of obj (func, validators)
-    var getOne = function (args, functions) {
+    var getOne = function (args, functions, context) {
         var funcs = filter_and_sort(args, functions);
         if (!funcs.length) {
             throw new Error("Function not found");
         }
-        return funcs[0].apply(null, args);
+        return funcs[0].apply(context, args);
     };
 
     // call all the functions matching with the validators.
     // Returns an array of results
-    var getAll = function (args, functions) {
+    var getAll = function (args, functions, context) {
         var i, out = [],
             funcs = filter_and_sort(args, functions);
         for (i = 0; i < funcs.length; i++) {
-            out.push(funcs[i].apply(null, args));
+            out.push(funcs[i].apply(context, args));
         }
         return out;
     };
@@ -161,21 +190,25 @@
     var occamsrazor = function () {
         var functions = [],
             occamsrazor = function () {
-                return getOne(Array.prototype.slice.call(arguments), functions);
+                return getOne(Array.prototype.slice.call(arguments), functions, this);
             };
 
-        occamsrazor.subscribe = occamsrazor.add = function (func, validators) {
+        occamsrazor.on = occamsrazor.subscribe = occamsrazor.add = function (validators, func) {
+            if (func === undefined){
+                func = validators; //there is no validators!
+                validators = [];
+            }
             add(functions, func, validators);
             return occamsrazor;
         };
 
-        occamsrazor.remove = function (func) {
+        occamsrazor.remove = occamsrazor.off = function (func) {
             functions = remove(functions, func);
             return occamsrazor;
         };
 
         occamsrazor.publish = occamsrazor.all = function () {
-            return getAll(Array.prototype.slice.call(arguments), functions);
+            return getAll(Array.prototype.slice.call(arguments), functions, this);
         };
 
 
@@ -183,7 +216,8 @@
     };
 
     //public methods
-    occamsrazor.validator = validator;
+    occamsrazor.chain = chain;
+    occamsrazor.stringValidator = stringValidator;
     occamsrazor.adapters = occamsrazor;
 
 

@@ -1,5 +1,5 @@
-occamsrazor.js
-==============
+occamsrazor.js 2.0
+==================
 Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
 
@@ -33,37 +33,37 @@ Because every kind of shape needs different calculations, we create an adapter f
 The problem is: how can we pick the right adapter for each shape ?
 
 This is where occamsrazor.js enter.
-First of all we need some validator. A validator is a function that identify what shape represent an object::
+First of all we need some validator. A validator is a function that helps to identify what shape represent an object::
 
-    var is_circle = occamsrazor.validator(function (obj){
+    var is_circle = function (obj){
         return 'radius' in obj;
-    });
+    };
 
-    var is_square = occamsrazor.validator(function (obj){
+    var is_square = function (obj){
         return 'width' in obj;
-    });
+    };
+
+A shape has a radius ? It's a circle !
+A shape has a width  ? It's a square !
+That's it !
 
 In this case we use attribute checking but we could use any kind of check.
-A validator returns a positive number if the function returns true or 0 if returns false.
-We can easily use validators to perform checks::
-
-    !!is_square(shape1); // false
-    !!is_circle(shape1); // true
-
 Now we create a special function that wraps our adapters (we could call it an adapter registry)::
 
     var shapeMath = occamsrazor.adapters();
+
+Then we add two adapters to our adapter registry::
     
-    shapeMath.add(circleMath, is_circle);
-    shapeMath.add(squareMath, is_square);
+    shapeMath.add(is_circle, circleMath);
+    shapeMath.add(is_square, squareMath);
     
+The first adapter should work for circles and the second for squares. The validators (is_circle and is_square) are used internally to pick the right adapter.
 If you prefer you can chain the add methods together and/or use "occamsrazor" instead of "occamsrazor.adapters" (it's just a shortcut)::
 
     var shapeMath = occamsrazor()
-        .add(circleMath, is_circle)
-        .add(squareMath, is_square);
+        .add(is_circle, circleMath)
+        .add(is_square, squareMath);
 
-For each of the adapters we specify a validator.
 From now if we need an adapter for our objects we can do::
 
     var adapter = shapeMath(shape1);
@@ -76,34 +76,54 @@ Why use adapters
 Maybe you are thinking why using an adapter when I can just extend an object using prototype or copying methods.
 There are two fundamentals problems with messing directly with the objects:
 
-    - the method we choose can conflicts with another with the same name
+    - the method name we choose can conflicts with another one. Generally speaking patches can easily become incompatible between each others
 
     - it's difficult to test an extension in isolation
 
-Furthermore, using JSON, Javascript developers used to deal with objects without methods and inheritance chains. So using adapters can fit the needings to add behaviours to an object.
+Furthermore, using JSON, Javascript developers deals with objects without methods and inheritance chains. So using adapters can fit the needings to add behaviours to an object.
 
-Extending an adapter
-====================
+Adding a more specific adapter
+==============================
 
 Now we add another kind of shape, a rectangle::
 
     var shape4 = {width: 5, height: 6};
 
-All we need to do is to create a new validator::
+We could write another validator::
 
-    var is_rectangle = occamsrazor.validator(is_square, function (obj){
+    var is_rectangle = function (obj){
+        return  'width' in obj && 'height' in obj;
+    };
+
+But this won't work correctly because both is_square and is_rectangle returns true and it's impossible to choose between them.
+We can solve this problem introducing a property of the validators: the specificity score.
+A validator can return a positive number to indicate how mush is specific.
+We can use the utility function "chain" to chain together a group of validator. In this case we extends the "is_square" validator::
+
+    var is_rectangle = occamsrazor.chain(is_square, function (obj){
         return 'height' in obj;
     });
 
-occamsrazor.validator allows you to chain a group of validator together.
-In this case we extends the "is_square" validator.
-A validator returns a value of 0 (if the object doesn't pass the whole chain of validators) or equal to the length of the chain.
+The score of this validator is the sum of the scores of every single validator (in this case 2).
+For the sake of clarity we should write a "is_parallelepiped" validator like this::
+
+    var is_parallelepiped = occamsrazor.chain(is_rectangle, function (obj){
+        return 'depth' in obj;
+    });
+
+This validator can return 3 (validate) or 0 (not validate).
+The general rule is: a validator must return a positive number if the validation is positive or a Javascript falsy value if the validation is negative.
+because of this, we can easily use validators to perform checks::
+
+    !!is_square(shape1); // false
+    !!is_circle(shape1); // true
+
 As a matter of fact if you execute both is_square and is_rectangle validators on shape4 they returns a positive number::
 
     is_rectangle(shape4); // 2
     is_square(shape4);    // 1
 
-The highest the number is the more specific is a validator.
+shape4 is both a rectangle and a square but the rectangle validator is more specific.
 Using this validator we can add another adapter::
 
     var rectangleMath = function (rectangle){
@@ -113,7 +133,7 @@ Using this validator we can add another adapter::
         };
     };
 
-    shapeMath.add(rectangleMath, is_rectangle);
+    shapeMath.add(is_rectangle, rectangleMath);
 
 When you call the adapter registry it will returns the most specific adapter (based on the validator with the highest score)::
 
@@ -134,42 +154,42 @@ The remove method is chainable::
 
 Multiadapters
 =============
-In the previous example we saw adapters that adapt a single object. We can also build multiadapters: adapters that adapt more than one object.
+In the previous example we saw adapters that adapt a single object. We can also build multiadapters: adapters that adapts more than one object.
 
 Let's make an example. I am writing a simple drawing program. This program can draw different shapes in different context using either canvas, svg or DOM manipulation.
-Each of these context has a different API and I am forced to write a different writer subroutine. To manage the code easily I could use some multiadapters::
+Each of these context has a different API and I am forced to write a different drawing subroutine. To manage the code easily I could use some multiadapters::
 
     var shapeDraw = occamsrazor.adapters();
 
     // draw a circle on canvas
-    shapeDraw.add(function (circle, canvasContext){
+    shapeDraw.add([is_circle, is_canvas], function (circle, canvasContext){
         ...
-    }, [is_circle, is_canvas])
+    });
 
     // draw a square on canvas
-    shapeDraw.add(function (square, canvasContext){
+    shapeDraw.add([is_square, is_canvas], function (square, canvasContext){
         ...
-    }, [is_square, is_canvas])
+    });
 
     // draw a circle on svg 
-    shapeDraw.add(function (circle, svgContext){
+    shapeDraw.add([is_circle, is_svg], function (circle, svgContext){
         ...
-    }, [is_circle, is_svg])
+    });
 
     // draw a square on svg 
-    shapeDraw.add(function (square, svgContext){
+    shapeDraw.add([is_square, is_svg], function (square, svgContext){
         ...
-    }, [is_square, is_svg])
+    });
 
     // draw a circle using DIVs
-    shapeDraw.add(function (circle, domContext){
+    shapeDraw.add([is_circle, is_dom], function (circle, domContext){
         ...
-    }, [is_circle, is_dom])
+    });
 
     // draw a square using DIVs
-    shapeDraw.add(function (square, domContext){
+    shapeDraw.add([is_square, is_dom], function (square, domContext){
         ...
-    }, [is_square, is_dom])
+    });
 
 From now, if I want to draw something on any context I will use::
 
@@ -183,10 +203,27 @@ The adapters machinery will do the rest executing the adapter with the highest s
 
 The score of multiadapters is calculated sorting the score of the validators in lexicographical order http://en.wikipedia.org/wiki/Lexicographical_order (like a dictionary).
 
+Passing parameters to the adapter
+=================================
+
+You should notice from the previous examples that adapters takes as arguments the object that pass the validation.
+
+    shapeDraw.add([is_circle, is_canvas], function (circle, canvasContext){
+    ...
+    painter = shapeDraw(shape, context);
+    
+In this case a "circle" object and a "canvasContext" object. You can also call the adapter with some extra arguments::
+
+    shapeDraw.add([is_circle, is_canvas], function (circle, canvasContext, strokecolor, fillcolor ){
+    ...
+    painter = shapeDraw(shape, context, 'red', 'black');
+
+These extra arguments are not considered during while choosing and adapter.
+
 Object registry
 ===============
 
-It is also possible use occamsrazor.js to build a registry of functions. These functions doesn't adapt anything::
+It is possible use occamsrazor.js to build a registry of functions. These functions doesn't adapt anything::
 
     var mail_adapters = occamsrazor.adapters();
 
@@ -207,115 +244,152 @@ Imagine we need to build a sort of menu of shapes available on canvas::
 
     var shapeAdder = occamsrazor.adapters();
     
-    var shapeAdder.add(function (canvas){
+    var shapeAdder.add(is_canvas, function (canvas){
         return {
             name: 'rectangle',
             add: function (){
                 return {width: 5, height: 6};
             }
         }
-    },is_canvas );
+    });
 
-    var shapeAdder.add(function (canvas){
+    var shapeAdder.add(is_canvas, function (canvas){
         return {
             name: 'circle',
             add: function (){
                 return {radius: 5};
             }
         }
-    },is_canvas );
+    });
 
-    var shapeAdder.add(function (canvas){
+    var shapeAdder.add(is_canvas, function (canvas){
         return {
             name: 'circle',
             add: function (){
                 return {width: 5};
             }
         }
-    },is_canvas );
+    });
 
     var canvas_shapes = shapeAdder.all(canvas);
 
-This will return an array containing all the adapters representing the shapes can be painted to a canvas.
+This will return an array containing all the adapters representing the shapes that can be painted to a canvas.
 
 Implementing a Mediator with occamsrazor
 ========================================
-The feature above allows to obtain a very useful "Mediator" object that implements pub sub and the adapter at the same time.
-This is very useful to manage events.
+The feature above allows to obtain a very useful "Mediator" object that implements pubblish/subscribe functions.
+This is very useful to manage events in a centralized fashion.
 Other information about the mediator design pattern are here: http://en.wikipedia.org/wiki/Mediator_pattern.
-Let's se an example::
+Let's see an example::
 
     var pubsub = occamsrazor();
 
     // this validators validate the the type of the event
 
-    var is_selected_event = occamsrazor.validator(function (evt){
+    var is_selected_event = function (evt){
         return evt === 'selected';
-    });
+    };
 
     // the event is subscribed for the circle object only
 
-    pubsub.add(function (evt, circle){
+    pubsub.add([is_selected_event, is_circle], function (evt, circle){
         console.log('Circle is selected');
-    }, [is_selected_event,is_circle])
+    })
 
 
     pubsub.all('selected', circle);
 
 To make the syntax more intuitive these functions have the alias subscribe and publish::
 
-    pubsub.subscribe(function (evt, circle){
-        console.log('Circle is selected');
-    }, [is_selected_event,is_circle])
+    pubsub.subscribe([is_selected_event,is_circle], 
+        function (evt, circle){
+            console.log('Circle is selected');
+        }
+    );
 
 
     pubsub.publish('selected', circle);
 
+To make even more easy we can use a special feature (explained in the section "Quick validators"). If a validator must perform a simple string checking we can use the string instead of the validator function::
+
+    pubsub.subscribe(["selected",is_circle],
+        function (evt, circle){
+            console.log('Circle is selected');
+        }
+    );
 
 Writing Validators
 ==================
 In order to write validators you can use duck typing, type checking or whatever check you want to use::
 
     // duck typing
-    var has_wings = occamsrazor.validator(function (obj){
+    var has_wings = function (obj){
         return 'wings' in obj;
-    });
+    };
 
     //type checking
-    var is_a_car = occamsrazor.validator(function (obj){
+    var is_a_car = function (obj){
         return Car.prototype.isPrototypeOf(obj);
-    });
+    };
 
     //other
-    var is_year = occamsrazor.validator(function (obj){
+    var is_year = function (obj){
         var re = /[0-9]{4}/;
         return !!obj.match(re);
-    });
+    };
+
+Quick validators
+================
+Quick validators are functions that helps to write the most common validators.
+occamsrazor.stringvalidator is used to validate strings::
+
+    var is_hello = occamsrazor.stringValidator('hello');
+    
+Validate a string equal to "hello". It uses the toString method to convert an object to its string representation.
+It can be used even with regular expressions::
+ 
+    var contains_nuts = occamsrazor.stringValidator(/nut/);
+
+If we pass a string or a regular expression instead of a validator function this string is automatically converted to a stringvalidator.
+Working with occamsrazor.js is often practical define your own "quickvalidator" functions.
+For example::
+
+    occamsrazor.attributeValidator = function (attributeName){
+        var closure = function (obj){
+            return attributeName in obj;
+        };
+        return closure;
+    };
+
+and then::
+
+    var has_name = occamsrazor.attributeValidator('name');
+
 
 Syntax and reference
 ====================
 
-occamsrazor.validator
+occamsrazor.chain
 ---------------------
 
-Validator Factory.
+Chain validators together.
 
 Syntax::
 
-    var validator = occamsrazor.validator([othervalidator, ]func);
+    var validator = occamsrazor.chain([othervalidator, ]func);
     
 Arguments:
 
     - func: a function with an argument (the object to validate). This function returns a boolean
 
-    - othervalidator: (optional) a validator function to chain with the new function
+    - othervalidator: a validator function to chain with the new function
 
 Returns a validator function.
     
 Validator function
 ------------------
 
-The function returned from occamsrazor.validator.
+The function returned from occamsrazor.chain.
 
 Syntax::
 
@@ -328,10 +402,10 @@ Returns 0 or a positive number
 
 obj is passed to the function and othervalidator.
 If othervalidator returns a positive number and func returns true the function returns a positive number equals to the validator number plus 1.
-If othervalidator returns 0 or func returns false the validator returns 0.
+If othervalidator returns 0 or func returns false the validator returns a Javascript falsy value.
 
-occamsrazor.adapter
--------------------
+occamsrazor.adapters
+--------------------
 
 returns an adapter registry.
 
@@ -353,9 +427,8 @@ Syntax::
 
 take 0 or more arguments. It calls the most specific function for the arguments.
 
-
 adapters.all (alias adapters.publish)
--------------------------------------
+-------------------------------------------------------
 
 Syntax::
 
@@ -364,8 +437,8 @@ Syntax::
 take 0 or more arguments. It calls every function that match with the arguments.
 The results of the functions are returned inside an array.
 
-adapters.add (alias adapters.subscribe)
----------------------------------------
+adapters.add (alias adapters.subscribe, adapter.on)
+---------------------------------------------------
 
 Add a function and 0 or more validators to the adapter registry. 
 If the adapter takes more than one argument (a multiadapter) we must pass an array with all the validators.
@@ -374,19 +447,30 @@ Syntax::
 
     adapters.add(func)
 
-    adapters.add(func, validator)
+    adapters.add(validator, func)
 
-    adapters.add(func, [an array of validators])
+    adapters.add([an array of validators], func)
 
-returns the adapter registry (this method can be chained)
+returns the adapter registry (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
 
-adapters.remove
----------------
+adapters.remove (alias adapters.off)
+------------------------------------
 delete a function from the adapter registry. Syntax::
 
     adapters.remove(func);
 
 returns the adapter registry (this method can be chained)
+
+occamsrazor.stringValidator
+---------------------------
+
+Returns a validator function that returns true if the string is equal or the regular expression matches.
+
+Syntax::
+
+    var validator = occamsrazor.stringValidator(string);
+
+    var validator = occamsrazor.stringValidator(regular_expression);
 
 About the name
 ==============

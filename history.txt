@@ -1,0 +1,15 @@
+Changelog
+
+2.0 (2012/12/15)
+================
+
+- new simpler validators. A simple function can be used
+  as validator
+- renamed method "validator" with "chain". From now It
+  can be used only for chaining validators
+- "this" i correctly passed to the functions
+- refactored tests
+- changed the order of "add" method. Now is more readable.
+- new aliases for the methods
+- added stringvalidator: a simple pre built string validator.
+  It is also used as a default validator
