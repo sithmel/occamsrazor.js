@@ -238,3 +238,21 @@ test("stringValidator using string", function() {
     equal(hello.apply('world!'), 'hello world!', 'This works correctly!');
 
 });
+
+module( "isAnything" );
+
+test("isAnything works", function() {
+    
+    ok(occamsrazor.isAnything({}), 'isAnything validator ok');
+
+});
+
+test("isAnything is used when validator is null", function() {
+
+    var works = occamsrazor().add(null, function (x){
+        return x;
+    });
+    
+    equals(works('anything'),'anything', 'used as instead of null');
+
+});

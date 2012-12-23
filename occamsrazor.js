@@ -57,6 +57,10 @@
         };
         return closure;
     };
+
+    var isAnything = function (obj){
+        return true;
+    };
     
     //convert an array in form [1,2,3] into a string "ABC" (easily sortable)
     var score_array_to_str = function (score) {
@@ -103,7 +107,10 @@
             validators = [validators];
         }
         for (i = 0; i < validators.length; i++){
-            if (typeof validators[i] !== 'function'){
+            if (validators[i] === null){
+                validators[i] = isAnything;
+            }
+            else if (typeof validators[i] !== 'function'){
                 validators[i] = stringValidator(validators[i]);
             }
         }
@@ -219,7 +226,8 @@
     occamsrazor.chain = chain;
     occamsrazor.stringValidator = stringValidator;
     occamsrazor.adapters = occamsrazor;
-
+    occamsrazor.isAnything = isAnything;
+ 
 
     // Expose occamsrazor as an AMD module
     if (typeof define === "function" && define.amd) {
