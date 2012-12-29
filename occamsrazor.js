@@ -8,9 +8,9 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 15 Dec 2012
+ * 29 Dec 2012
  *
- * version 2.0
+ * version 2.1
  ******************************************************************************/
 
 
@@ -60,6 +60,22 @@
 
     var isAnything = function (obj){
         return true;
+    };
+
+    var wrapConstructor = function (Constructor){
+        function closure(){
+            var newobj, out, 
+                New = function (){};
+            New.prototype = Constructor.prototype;
+            newobj = new New;
+            newobj.constructor = Constructor;
+            out = Constructor.apply(newobj, Array.prototype.slice.call(arguments));
+            if (out === undefined){
+               return newobj;
+            }
+            return out
+        }
+        return closure;
     };
     
     //convert an array in form [1,2,3] into a string "ABC" (easily sortable)
@@ -209,6 +225,15 @@
             return occamsrazor;
         };
 
+        occamsrazor.addnew = function (validators, func) {
+            if (func === undefined){
+                func = validators; //there is no validators!
+                validators = [];
+            }
+            add(functions, wrapConstructor(func), validators);
+            return occamsrazor;
+        };
+
         occamsrazor.remove = occamsrazor.off = function (func) {
             functions = remove(functions, func);
             return occamsrazor;
@@ -227,6 +252,7 @@
     occamsrazor.stringValidator = stringValidator;
     occamsrazor.adapters = occamsrazor;
     occamsrazor.isAnything = isAnything;
+    occamsrazor.wrapConstructor = wrapConstructor;
  
 
     // Expose occamsrazor as an AMD module

@@ -220,6 +220,29 @@ In this case a "circle" object and a "canvasContext" object. You can also call t
 
 These extra arguments are not considered for the purpose of selecting the adapter.
 
+Adding constructor functions to an adapter
+==========================================
+
+Occamsrazor.js works with constructor functions too ! just use the "addnew" method::
+
+    Shape = occamsrazor
+        .addnew(has_width, function (obj){
+            this.width = obj.width;
+            this.area = this.width * this.width;
+        })
+        .addnew(has_radius, function (obj){
+            this.radius = obj.radius;
+            this.area = 2 * this.radius * Math.PI;
+        });
+
+    var shape = new Shape({width: 5});
+
+The prototype chain and "constructor" attribute should work as expected.
+A little side effect is that the constructor could be called as a function::
+
+    var shape = Shape({width: 5});
+
+
 Object registry
 ===============
 
@@ -447,6 +470,23 @@ Syntax::
     adapters.add(validator, func)
 
     adapters.add([an array of validators], func)
+
+returns the adapter registry (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
+If a validator is null it is converted as occamsrazor.isAnything.
+
+adapters.addnew 
+---------------------------------------------------
+
+Add a constructor function and 0 or more validators to the adapter registry. 
+If the adapter takes more than one argument (a multiadapter) we must pass an array with all the validators.
+
+Syntax::
+
+    adapters.addnew(func)
+
+    adapters.addnew(validator, func)
+
+    adapters.addnew([an array of validators], func)
 
 returns the adapter registry (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
 If a validator is null it is converted as occamsrazor.isAnything.

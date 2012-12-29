@@ -253,6 +253,65 @@ test("isAnything is used when validator is null", function() {
         return x;
     });
     
-    equals(works('anything'),'anything', 'used as instead of null');
+    equals(works('anything'),'anything', 'used isAnything instead of null');
 
 });
+
+module( "wrapConstructor" );
+
+test("decorator used internally to wrap a constructor function", function() {
+    var Constructor = occamsrazor.wrapConstructor(function (x){
+        this.x = x
+    });
+    
+    equals(Constructor('anything').x,'anything', 'returns an object');
+    equals(new Constructor('anything').x,'anything', 'returns an object');
+        
+});
+
+test("checking prototype and constructor", function() {
+    var Constructor = function (x){
+        this.x = x;
+    };
+    Constructor.prototype.number = 10;
+    
+    var WrappedConstructor = occamsrazor.wrapConstructor(Constructor);
+    
+    var obj = WrappedConstructor('5');
+    equals(obj.x,5, 'test args');
+    equals(obj.number,10, 'test prototype');
+    equals(obj.constructor,Constructor, 'test constructor');
+
+    var obj = new WrappedConstructor('5');
+    equals(obj.x,5, 'test args');
+    equals(obj.number,10, 'test prototype');
+    equals(obj.constructor,Constructor, 'test constructor');
+        
+});
+
+test("adding a constructor function with addnew", function() {
+
+    var Constructor = occamsrazor().addnew(function (x){
+        this.x = x;
+    });
+    
+    equals(Constructor('anything').x,'anything', 'returns an object');
+    equals(new Constructor('anything').x,'anything', 'returns an object');
+
+});
+
+test("checking prototype and constructor with addnew", function() {
+    var Constructor = function (x){
+        this.x = x;
+    };
+    Constructor.prototype.number = 10;
+    
+    var WrappedConstructor = occamsrazor().addnew(Constructor);
+    
+    var obj = WrappedConstructor('5');
+    equals(obj.x,5, 'test args');
+    equals(obj.number,10, 'test prototype');
+    equals(obj.constructor,Constructor, 'test constructor');
+        
+});
+
