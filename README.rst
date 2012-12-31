@@ -1,4 +1,4 @@
-occamsrazor.js 2.0
+occamsrazor.js 2.1
 ==================
 Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
@@ -223,14 +223,14 @@ These extra arguments are not considered for the purpose of selecting the adapte
 Adding constructor functions to an adapter
 ==========================================
 
-Occamsrazor.js works with constructor functions too ! just use the "addnew" method::
+Occamsrazor.js works with constructor functions too ! just use the "addNew" method::
 
     Shape = occamsrazor
-        .addnew(has_width, function (obj){
+        .addNew(has_width, function (obj){
             this.width = obj.width;
             this.area = this.width * this.width;
         })
-        .addnew(has_radius, function (obj){
+        .addNew(has_radius, function (obj){
             this.radius = obj.radius;
             this.area = 2 * this.radius * Math.PI;
         });
@@ -472,9 +472,9 @@ Syntax::
     adapters.add([an array of validators], func)
 
 returns the adapter registry (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
-If a validator is null it is converted as occamsrazor.isAnything.
+If a validator is null it become occamsrazor.isAnything.
 
-adapters.addnew 
+adapters.addNew (alias .addConstructor)
 ---------------------------------------------------
 
 Add a constructor function and 0 or more validators to the adapter registry. 

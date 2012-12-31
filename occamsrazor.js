@@ -225,7 +225,7 @@
             return occamsrazor;
         };
 
-        occamsrazor.addnew = function (validators, func) {
+        occamsrazor.addConstructor = occamsrazor.addNew = function (validators, func) {
             if (func === undefined){
                 func = validators; //there is no validators!
                 validators = [];

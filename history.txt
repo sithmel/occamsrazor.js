@@ -5,7 +5,8 @@ Changelog
 
 - documentation partial rewrite
 - added anythingvalidator
-- added addnew method and wrapConstructor
+- added addNew method and wrapConstructor
+- aliased addNew as addConstructor
 
 2.0 (2012/12/15)
 ================
