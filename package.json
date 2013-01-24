@@ -1,0 +1,24 @@
+{
+  "name": "occamsrazor",
+  "version": "2.1.0",
+  "description": "A plugin system for Javascript",
+  "main": "occamsrazor.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sithmel/occamsrazor.js.git"
+  },
+  "keywords": [
+    "plugin",
+    "adapters"
+  ],
+  "author": "Maurizio Lupo <maurizio.lupo@gmail.com>",
+  "license": "gpl-mit",
+  "readmeFilename": "README.rst",
+  "gitHead": "38821d9d552829b8aeef15fd6adeae86189c18db"
+}

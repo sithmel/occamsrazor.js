@@ -1,5 +1,5 @@
-occamsrazor.js 2.1
-==================
+occamsrazor.js 2.1.0
+====================
 Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
 
