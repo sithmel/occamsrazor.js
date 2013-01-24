@@ -8,9 +8,9 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 29 Dec 2012
+ * 24 Jan 2013
  *
- * version 2.1.0
+ * version 2.2.0
  ******************************************************************************/
 
 
