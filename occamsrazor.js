@@ -8,9 +8,9 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 24 Jan 2013
+ * 19 Apr 2013
  *
- * version 2.2.0
+ * version 2.2.1
  ******************************************************************************/
 
 
@@ -261,7 +261,7 @@
     }
     // Expose occamsrazor as an UMD module (common.js)
     else if (typeof exports === 'object'){
-        exports.occamsrazor = occamsrazor;
+        exports = occamsrazor;
     }
     else if (typeof window === 'object'){
         // Expose occamsrazor to the browser global object

@@ -1,4 +1,4 @@
-occamsrazor.js 2.2.0
+occamsrazor.js 2.2.1
 ====================
 Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
@@ -394,6 +394,17 @@ and then::
 Syntax and reference
 ====================
 
+Importing occamsrazor.js
+------------------------
+Occamsrazor can be imported in a traditional way::
+
+    <script src="lib/occamsrazor.js"></script>
+    
+or using AMD (require.js).
+You can also use it in node.js::
+
+    var occamsrazor = require('occamsrazor');
+
 Validator function
 ------------------
 
@@ -512,11 +523,11 @@ Syntax::
 
 occamsrazor.isAnything
 ----------------------
-It is a validator function returning True.
+It is a validator function returning True::
 
-occamsrazor.isAnything = function (obj){
-    return true;
-};
+    occamsrazor.isAnything = function (obj){
+        return true;
+    };
 
 It has the least possible specificity (1).
 
