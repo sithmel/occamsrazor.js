@@ -260,8 +260,8 @@
         define("occamsrazor", [], function () { return occamsrazor; });
     }
     // Expose occamsrazor as an UMD module (common.js)
-    else if (typeof exports === 'object'){
-        exports = occamsrazor;
+    else if (typeof module.exports === 'object'){
+        module.exports = occamsrazor;
     }
     else if (typeof window === 'object'){
         // Expose occamsrazor to the browser global object

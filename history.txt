@@ -1,5 +1,10 @@
 Changelog
 
+2.2.2 (unreleased)
+==================
+
+- fixed UMD import (again)
+
 2.2.1 (2013/06/10)
 ==================
 
