@@ -289,9 +289,9 @@ test("checking prototype and constructor", function() {
         
 });
 
-test("adding a constructor function with addnew", function() {
+test("adding a constructor function with addNew", function() {
 
-    var Constructor = occamsrazor().addnew(function (x){
+    var Constructor = occamsrazor().addNew(function (x){
         this.x = x;
     });
     
@@ -300,18 +300,31 @@ test("adding a constructor function with addnew", function() {
 
 });
 
-test("checking prototype and constructor with addnew", function() {
+test("checking prototype and constructor with addNew", function() {
     var Constructor = function (x){
         this.x = x;
     };
     Constructor.prototype.number = 10;
     
-    var WrappedConstructor = occamsrazor().addnew(Constructor);
+    var WrappedConstructor = occamsrazor().addNew(Constructor);
     
     var obj = WrappedConstructor('5');
     equals(obj.x,5, 'test args');
     equals(obj.number,10, 'test prototype');
     equals(obj.constructor,Constructor, 'test constructor');
         
+});
+
+module( "registry" );
+
+test("testing empty registry", function() {
+    var test = occamsrazor.registry('main')('test');
+    ok(test instanceof Function);
+});
+
+test("testing full registry", function() {
+    var test1 = occamsrazor.registry('main')('test').add(function (){return 'ok'}),
+        test2 = occamsrazor.registry('main')('test');
+    equals(test2(), 'ok');
 });
 

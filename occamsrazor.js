@@ -8,9 +8,9 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 19 Apr 2013
+ * 14 Sep 2013
  *
- * version 2.2.1
+ * version 2.3.0
  ******************************************************************************/
 
 
@@ -247,13 +247,35 @@
         return occamsrazor;
     };
 
+    // registries
+    var _registries = {};
+    
+    var registry = function (registry_name){
+        var adapter = function (_registry){
+            return function (function_name){
+                if ( !( function_name in _registry) ){
+                    _registry[function_name] = occamsrazor();
+                }
+                return _registry[function_name];
+            };
+        };
+
+        if ( !( registry_name in _registries) ){
+            _registries[registry_name] = {};
+        }
+        
+        return adapter(_registries[registry_name]);
+    };
+
+
     //public methods
     occamsrazor.chain = chain;
     occamsrazor.stringValidator = stringValidator;
     occamsrazor.adapters = occamsrazor;
     occamsrazor.isAnything = isAnything;
     occamsrazor.wrapConstructor = wrapConstructor;
- 
+    occamsrazor.registry = registry;
+
 
     // Expose occamsrazor as an AMD module
     if (typeof define === "function" && define.amd) {

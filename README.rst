@@ -1,4 +1,4 @@
-occamsrazor.js 2.2.2
+occamsrazor.js 2.3.0
 ====================
 Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
@@ -243,23 +243,6 @@ A little side effect is that the constructor could be called as a function::
     var shape = Shape({width: 5});
 
 
-Object registry
-===============
-
-You can use occamsrazor.js to build a registry of functions. These functions doesn't adapt anything::
-
-    var mail_adapters = occamsrazor.adapters();
-
-    mail_adapter.add(function (){
-        return {send : function (msg){
-            ... // send a mail
-        }};
-    });
-    
-    var mail_sender = mail_adapters();
-
-    mail_sender.send('Hello !')
-
 Getting all the adapters
 ========================
 Sometimes we need to get back all the adapters, not just the more specific::
@@ -390,6 +373,16 @@ and then::
 
     var has_name = occamsrazor.attributeValidator('name');
 
+Registries
+==========
+This helper function is useful to group adapters in registries.
+
+    var mathregistry = occamsrazor.registry('math'),
+        getArea = mathregistry('area_functions');
+
+If a registry doesn't exist it is created and returned by the registry function.
+If the adapter required doesn't exist it is created and returned too.
+
 
 Syntax and reference
 ====================
@@ -438,7 +431,7 @@ Returns a validator function.
 occamsrazor.adapters
 --------------------
 
-returns an adapter registry.
+returns adapters.
 
 Syntax::
 
@@ -448,8 +441,8 @@ or::
     
     var adapters = occamsrazor();
     
-Adapter registry
-================
+Adapters
+========
 A function/object returned from occamsrazor.adapter
 
 Syntax::
@@ -471,7 +464,7 @@ The results of the functions are returned inside an array.
 adapters.add (alias .subscribe, .on)
 ---------------------------------------------------
 
-Add a function and 0 or more validators to the adapter registry. 
+Add a function and 0 or more validators to the adapters. 
 If the adapter takes more than one argument (a multiadapter) we must pass an array with all the validators.
 
 Syntax::
@@ -482,33 +475,33 @@ Syntax::
 
     adapters.add([an array of validators], func)
 
-returns the adapter registry (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
+returns the adapters (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
 If a validator is null it become occamsrazor.isAnything.
 
 adapters.addNew (alias .addConstructor)
 ---------------------------------------------------
 
-Add a constructor function and 0 or more validators to the adapter registry. 
+Add a constructor function and 0 or more validators to the adapters. 
 If the adapter takes more than one argument (a multiadapter) we must pass an array with all the validators.
 
 Syntax::
 
-    adapters.addnew(func)
+    adapters.addNew(func)
 
-    adapters.addnew(validator, func)
+    adapters.addNew(validator, func)
 
-    adapters.addnew([an array of validators], func)
+    adapters.addNew([an array of validators], func)
 
-returns the adapter registry (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
+returns the adapters (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
 If a validator is null it is converted as occamsrazor.isAnything.
 
 adapters.remove (alias .off)
 ------------------------------------
-delete a function from the adapter registry. Syntax::
+delete a function from the adapters. Syntax::
 
     adapters.remove(func);
 
-returns the adapter registry (this method can be chained)
+returns the adapters (this method can be chained)
 
 occamsrazor.stringValidator
 ---------------------------
