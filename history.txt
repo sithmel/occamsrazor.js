@@ -6,6 +6,7 @@ Changelog
 - added registry feature
 - fixed tests
 - updated docs
+- added bower.json
 
 2.2.2 (2013/06/10)
 ==================

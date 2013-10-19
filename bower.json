@@ -1,0 +1,23 @@
+{
+  "name": "occamsrazor",
+  "main": "occamsrazor.js",
+  "version": "2.3.0",
+  "homepage": "https://github.com/sithmel/occamsrazor.js",
+  "authors": [
+    "Maurizio Lupo <maurizio.lupo@gmail.com>"
+  ],
+  "description": "An component registry for javascript",
+  "keywords": [
+    "plugins",
+    "components",
+    "registry"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
