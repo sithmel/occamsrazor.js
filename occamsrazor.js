@@ -248,7 +248,11 @@
     };
 
     // registries
-    var _registries = (window || global)._occamsrazor_registry = {};
+    var _registries = (window || global)._occamsrazor_registry;
+    
+    if(!_registries){
+        _registries = {};
+    }
     
     var registry = function (registry_name){
         var adapter = function (_registry){
