@@ -328,3 +328,8 @@ test("testing full registry", function() {
     equals(test2(), 'ok');
 });
 
+test("testing default registry", function() {
+    var test1 = occamsrazor.registry()('test').add(function (){return 'ok'}),
+        test2 = occamsrazor.registry()('test');
+    equals(test2(), 'ok');
+});

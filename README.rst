@@ -375,13 +375,17 @@ and then::
 
 Registries
 ==========
-This helper function is useful to group adapters in registries.
+This helper function is useful to group adapters in registries::
 
     var mathregistry = occamsrazor.registry('math'),
         getArea = mathregistry('area_functions');
 
 If a registry doesn't exist it is created and returned by the registry function.
 If the adapter required doesn't exist it is created and returned too.
+If you don't specify a specific registry you'll get the "default" registry::
+
+    var registry = occamsrazor.registry();
+        getArea = registry('area_functions');
 
 
 Syntax and reference

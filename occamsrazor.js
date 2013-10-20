@@ -248,13 +248,16 @@
     };
 
     // registries
-    var _registries = (window || global)._occamsrazor_registry;
+    var _registries = (window || global);
     
-    if(!_registries){
-        _registries = {};
+    if(!_registries._occamsrazor_registries){
+        _registries._occamsrazor_registries = {};
     }
+
+    _registries = _registries._occamsrazor_registries;
     
     var registry = function (registry_name){
+        registry_name = registry_name || "default";
         var adapter = function (_registry){
             return function (function_name){
                 if ( !( function_name in _registry) ){
