@@ -6,13 +6,14 @@
   "authors": [
     "Maurizio Lupo <maurizio.lupo@gmail.com>"
   ],
-  "description": "An component registry for javascript",
+  "description": "A plugin system for Javascript",
   "keywords": [
     "plugins",
     "components",
-    "registry"
+    "registry",
+    "adapters"
   ],
-  "license": "MIT",
+  "license": "gpl-mit",
   "ignore": [
     "**/.*",
     "node_modules",

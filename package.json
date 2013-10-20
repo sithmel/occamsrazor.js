@@ -1,6 +1,6 @@
 {
   "name": "occamsrazor",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "A plugin system for Javascript",
   "main": "occamsrazor.js",
   "directories": {
@@ -14,7 +14,9 @@
     "url": "git://github.com/sithmel/occamsrazor.js.git"
   },
   "keywords": [
-    "plugin",
+    "plugins",
+    "components",
+    "registry",
     "adapters"
   ],
   "author": "Maurizio Lupo <maurizio.lupo@gmail.com>",
