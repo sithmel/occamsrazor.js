@@ -278,7 +278,7 @@ Let's see an example::
 
     // this validators validate the the type of the event
 
-    var is_selected_event = occamsrazor.validator(function (evt){
+    var is_selected_event = occamsrazor.validator().chain(function (evt){
         return evt === 'selected';
     });
 
@@ -303,7 +303,7 @@ To make the syntax more intuitive these functions have the alias subscribe and p
 
     pubsub.publish('selected', circle);
 
-To make everything simpler we can use a special feature (explained in the section "Quick validators"). If a validator must perform a simple string checking we can use the string instead of the validator function::
+To make everything simpler we can use a special feature (explained in the next section). If a validator must perform a simple string checking we can use the string instead of the validator function::
 
     pubsub.subscribe(["selected",has_radius],
         function (evt, circle){
@@ -320,42 +320,39 @@ General validators returns a number bigger than 1.
 In order to write validators you can use duck typing, type checking or whatever check you want to use::
 
     // duck typing
-    var has_wings = occamsrazor.validator(function (obj){
+    var has_wings = occamsrazor.validator().chain(function (obj){
         return 'wings' in obj;
     });
 
     //type checking
-    var is_a_car = occamsrazor.validator(function (obj){
+    var is_a_car = occamsrazor.validator().chain(function (obj){
         return Car.prototype.isPrototypeOf(obj);
     });
 
     //other
-    var is_year = occamsrazor.validator(function (obj){
+    var is_year = occamsrazor.validator().chain(function (obj){
         var re = /[0-9]{4}/;
         return !!obj.match(re);
     });
 
-For writing easily a validator a few helper are available
-occamsrazor.stringvalidator is used to validate strings::
+For writing easily a validator a few helper are available in the occamsrazor.shortcut_validators object::
 
-    var is_hello = occamsrazor.stringValidator('hello');
+    var is_hello = occamsrazor.validator().match('hello');
 
 Validate a string equal to "hello". It uses the toString method to convert an object to its string representation.
 It can be used even with regular expressions::
 
-    var contains_nuts = occamsrazor.stringValidator(/nut/);
+    var contains_nuts = occamsrazor.validator().match(/nut/);
 
-If we pass a string or a regular expression instead of a validator function this string is automatically converted to a stringvalidator.
+If we pass a string or a regular expression instead of a validator function this string is automatically use this shortcut.
 You can also use the "has" validator for checking if a property exists and isPrototypeOf::
 
-    var has_wings = occamsrazor.has('wings');
-    var is_prototype_rect = occamsrazor.isPrototypeOf(rect.prototype);
+    var has_wings = occamsrazor.validator().has('wings');
+    var is_prototype_rect = occamsrazor.validator().isPrototypeOf(rect.prototype);
 
-Both of them can take multiple arguments::
+You can also chain them together::
 
-    var has_wings_and_beak = occamsrazor.has('wings', 'beaks'); // specificity 3
-    var is_prototype_rect_and_square = occamsrazor.isPrototypeOf(rect.prototype, square.prototype); // specificity 3
-
+    var is_prototype_rect_and_has_wings = occamsrazor.validator().isPrototypeOf(rect.prototype).has('wings');
 
 Registries
 ==========
