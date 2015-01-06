@@ -34,7 +34,7 @@ module( "Main", {
 
         this.electricguitar = {
             instrument_name : 'electric guitar',
-            nStrings : 6, 
+            nStrings : 6,
             ampli : 'marshall'
         };
 
@@ -77,7 +77,7 @@ test("Execute function", function() {
 test("Execute function (pick a specific function)", function() {
     equals(this.player(this.electricguitar) , 'A solo with electric guitar and marshall' ,"Execute electric guitar function" );
 });
-    
+
 test("Execute all functions (just one result)", function() {
     var results = this.player.all(this.guitar);
     equals(results.length, 1, "Just one result");
@@ -146,7 +146,7 @@ test("Execute a function with 3 arguments", function() {
 /*
 Use occamsrazor.js with observer pattern
 
-testing 
+testing
 */
 module( "Pubsub and default stringvalidator", {
     setup: function (){
@@ -170,7 +170,7 @@ module( "Pubsub and default stringvalidator", {
 
         this.electricguitar = {
             instrument_name : 'electric guitar',
-            nStrings : 6, 
+            nStrings : 6,
             ampli : 'marshall'
         };
 
@@ -230,11 +230,11 @@ test("stringValidator using regexp", function() {
 module( "this" );
 
 test("stringValidator using string", function() {
-    
+
     var hello = occamsrazor().add(function (){
         return "hello "  + this;
     });
-    
+
     equal(hello.apply('world!'), 'hello world!', 'This works correctly!');
 
 });
@@ -242,7 +242,7 @@ test("stringValidator using string", function() {
 module( "isAnything" );
 
 test("isAnything works", function() {
-    
+
     ok(occamsrazor.isAnything({}), 'isAnything validator ok');
 
 });
@@ -252,10 +252,18 @@ test("isAnything is used when validator is null", function() {
     var works = occamsrazor().add(null, function (x){
         return x;
     });
-    
+
     equals(works('anything'),'anything', 'used isAnything instead of null');
 
 });
+
+test("isAnything is lower than any other validator", function() {
+    var isany = occamsrazor.isAnything({});
+    var validator = occamsrazor.validator(function (){return true;})({});
+    ok(Number(isany) < Number(validator), 'is lower');
+
+});
+
 
 module( "wrapConstructor" );
 
@@ -263,10 +271,10 @@ test("decorator used internally to wrap a constructor function", function() {
     var Constructor = occamsrazor.wrapConstructor(function (x){
         this.x = x
     });
-    
+
     equals(Constructor('anything').x,'anything', 'returns an object');
     equals(new Constructor('anything').x,'anything', 'returns an object');
-        
+
 });
 
 test("checking prototype and constructor", function() {
@@ -274,9 +282,9 @@ test("checking prototype and constructor", function() {
         this.x = x;
     };
     Constructor.prototype.number = 10;
-    
+
     var WrappedConstructor = occamsrazor.wrapConstructor(Constructor);
-    
+
     var obj = WrappedConstructor('5');
     equals(obj.x,5, 'test args');
     equals(obj.number,10, 'test prototype');
@@ -286,7 +294,7 @@ test("checking prototype and constructor", function() {
     equals(obj.x,5, 'test args');
     equals(obj.number,10, 'test prototype');
     equals(obj.constructor,Constructor, 'test constructor');
-        
+
 });
 
 test("adding a constructor function with addNew", function() {
@@ -294,7 +302,7 @@ test("adding a constructor function with addNew", function() {
     var Constructor = occamsrazor().addNew(function (x){
         this.x = x;
     });
-    
+
     equals(Constructor('anything').x,'anything', 'returns an object');
     equals(new Constructor('anything').x,'anything', 'returns an object');
 
@@ -305,14 +313,14 @@ test("checking prototype and constructor with addNew", function() {
         this.x = x;
     };
     Constructor.prototype.number = 10;
-    
+
     var WrappedConstructor = occamsrazor().addNew(Constructor);
-    
+
     var obj = WrappedConstructor('5');
     equals(obj.x,5, 'test args');
     equals(obj.number,10, 'test prototype');
     equals(obj.constructor,Constructor, 'test constructor');
-        
+
 });
 
 module( "registry" );

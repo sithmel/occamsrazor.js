@@ -10,7 +10,7 @@
  * GPL license/MIT license
  * 14 Sep 2013
  *
- * version 2.3.0
+ * version 2.4.0
  ******************************************************************************/
 
 
@@ -23,10 +23,37 @@
         return Object.prototype.toString.call(vArg) === "[object Array]";
       };
     }
-    
+
+    var map = function (a, cb){ // naive array.map
+        var out = [];
+        for (var i = 0; i < a.length; i++){
+            out.push(cb(a[i]));
+        }
+        return out;
+    };
+
+    var isAnything = function (obj){
+        return true;
+    };
+
+    var validator = function (){
+        var v = function (obj){
+
+        };
+        v.chain = function (func){
+            v.push(func);
+        };
+        return v;
+    };
+
     //returns a validator (function that returns a score)
     var chain = function () {
         var validators = arguments;
+        // always add isAnything as any validator should be more specific of this
+        if (validators.length <= 1){
+            Array.prototype.unshift.call(validators, isAnything);
+        }
+
         var closure = function (obj) {
             var i, score, total = 0;
             for (i = 0; i < validators.length; i++) {
@@ -45,7 +72,7 @@
         if (typeof s !== 'string' && !(typeof s === 'object' && 'test' in s)){
             throw new Error("A stringValidator argument must be a string or a regular expression");
         }
-       
+
         var closure = function (obj){
             var str = obj.toString();
             if (typeof s === 'string'){
@@ -55,16 +82,24 @@
                 return s.test(str);
             }
         };
-        return closure;
+        return chain(closure);
     };
 
-    var isAnything = function (obj){
-        return true;
+    var has = function (){
+        return chain(map(arguments, function (attr){
+            return function (obj){return attr in obj;}
+        }));
+    };
+
+    var isPrototypeOf = function (){
+        return chain(map(arguments, function (proto){
+            return function (obj){return proto.isPrototypeOf(obj);}
+        }));
     };
 
     var wrapConstructor = function (Constructor){
         function closure(){
-            var newobj, out, 
+            var newobj, out,
                 New = function (){};
             New.prototype = Constructor.prototype;
             newobj = new New;
@@ -77,7 +112,7 @@
         }
         return closure;
     };
-    
+
     //convert an array in form [1,2,3] into a string "ABC" (easily sortable)
     var score_array_to_str = function (score) {
         var i, s = ""; //output string
@@ -111,7 +146,7 @@
     //validators is an array of validators
     //functions is a list of obj (func, validators)
     var add = function (functions, func, validators) {
-        var i;        
+        var i;
         if (typeof func !== 'function') {
             throw new Error("The last argument MUST be a function");
         }
@@ -164,7 +199,7 @@
         }
         //get the score function
         getScore = compute_score(args);
-        //decorate    
+        //decorate
         for (i = 0; i < functions.length; i++) {
             func = functions[i].func;
             validators = functions[i].validators;
@@ -249,13 +284,13 @@
 
     // registries
     var _registries = (window || global);
-    
+
     if(!_registries._occamsrazor_registries){
         _registries._occamsrazor_registries = {};
     }
 
     _registries = _registries._occamsrazor_registries;
-    
+
     var registry = function (registry_name){
         registry_name = registry_name || "default";
         var adapter = function (_registry){
@@ -270,13 +305,17 @@
         if ( !( registry_name in _registries) ){
             _registries[registry_name] = {};
         }
-        
+
         return adapter(_registries[registry_name]);
     };
 
 
     //public methods
+    occamsrazor.validator = chain;
     occamsrazor.chain = chain;
+    occamsrazor.has = has;
+    occamsrazor.isPrototypeOf = isPrototypeOf;
+
     occamsrazor.stringValidator = stringValidator;
     occamsrazor.adapters = occamsrazor;
     occamsrazor.isAnything = isAnything;
@@ -298,4 +337,3 @@
     }
 
 }());
-
