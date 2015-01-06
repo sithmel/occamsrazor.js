@@ -8,9 +8,9 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 14 Sep 2013
+ * 6 Sep 2015
  *
- * version 2.4.0
+ * version 3.0.0
  ******************************************************************************/
 
 
@@ -24,40 +24,41 @@
       };
     }
 
-    var map = function (a, cb){ // naive array.map
-        var out = [];
-        for (var i = 0; i < a.length; i++){
-            out.push(cb(a[i]));
-        }
-        return out;
-    };
-
     var isAnything = function (obj){
         return true;
     };
 
-    var validator = function (){
-        var v = function (obj){
+    var shortcut_validators = {
+        match: function (s){
+            if (typeof s !== 'string' && !(typeof s === 'object' && 'test' in s)){
+                throw new Error("The match argument must be a string or a regular expression");
+            }
 
-        };
-        v.chain = function (func){
-            v.push(func);
-        };
-        return v;
+            return function (obj){
+                var str = obj.toString();
+                if (typeof s === 'string'){
+                    return str === s; //it is a string
+                }
+                else if (typeof s === 'object' && 'test' in s){
+                    return s.test(str);
+                }
+            };
+        },
+        has: function (attr){
+            return function (obj){return attr in obj;};
+        },
+        isPrototypeOf: function (proto){
+            return function (obj){return proto.isPrototypeOf(obj);};
+        }
     };
 
-    //returns a validator (function that returns a score)
-    var chain = function () {
-        var validators = arguments;
-        // always add isAnything as any validator should be more specific of this
-        if (validators.length <= 1){
-            Array.prototype.unshift.call(validators, isAnything);
-        }
-
-        var closure = function (obj) {
+    var _validator = function (funcs){
+        var k;
+        funcs = funcs || [isAnything];
+        var v = function (obj){
             var i, score, total = 0;
-            for (i = 0; i < validators.length; i++) {
-                score = validators[i](obj);
+            for (i = 0; i < funcs.length; i++) {
+                score = funcs[i](obj);
                 if (!score) {
                     return null;
                 }
@@ -65,36 +66,27 @@
             }
             return total;
         };
-        return closure;
-    };
 
-    var stringValidator = function (s){
-        if (typeof s !== 'string' && !(typeof s === 'object' && 'test' in s)){
-            throw new Error("A stringValidator argument must be a string or a regular expression");
+        v.chain = function (func){
+            return _validator(funcs.concat(func));
+        };
+
+        // shortcut validators
+        for (k in shortcut_validators){
+            v[k] = (function (f){
+                return function (){
+                    var args = Array.prototype.slice.call(arguments);
+                    return v.chain(f.apply(null, args));
+                };
+            }(shortcut_validators[k]));
         }
 
-        var closure = function (obj){
-            var str = obj.toString();
-            if (typeof s === 'string'){
-                return str === s; //it is a string
-            }
-            else if (typeof s === 'object' && 'test' in s){
-                return s.test(str);
-            }
-        };
-        return chain(closure);
+        return v;
     };
 
-    var has = function (){
-        return chain(map(arguments, function (attr){
-            return function (obj){return attr in obj;}
-        }));
-    };
-
-    var isPrototypeOf = function (){
-        return chain(map(arguments, function (proto){
-            return function (obj){return proto.isPrototypeOf(obj);}
-        }));
+    //returns a validator (function that returns a score)
+    var validator = function (){
+        return _validator();
     };
 
     var wrapConstructor = function (Constructor){
@@ -159,10 +151,10 @@
         }
         for (i = 0; i < validators.length; i++){
             if (validators[i] === null){
-                validators[i] = isAnything;
+                validators[i] = validator();
             }
             else if (typeof validators[i] !== 'function'){
-                validators[i] = stringValidator(validators[i]);
+                validators[i] = validator().match(validators[i]);
             }
         }
 
@@ -311,16 +303,14 @@
 
 
     //public methods
-    occamsrazor.validator = chain;
-    occamsrazor.chain = chain;
-    occamsrazor.has = has;
-    occamsrazor.isPrototypeOf = isPrototypeOf;
+    occamsrazor.validator = validator;
+    occamsrazor.shortcut_validators = shortcut_validators;
 
-    occamsrazor.stringValidator = stringValidator;
     occamsrazor.adapters = occamsrazor;
-    occamsrazor.isAnything = isAnything;
-    occamsrazor.wrapConstructor = wrapConstructor;
     occamsrazor.registry = registry;
+
+    // undocumented but tested (private use)
+    occamsrazor.wrapConstructor = wrapConstructor;
 
 
     // Expose occamsrazor as an AMD module

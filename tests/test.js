@@ -8,15 +8,15 @@ Tests
 */
 module( "Main", {
     setup: function (){
-        this.is_instrument = function (obj){
+        this.is_instrument = occamsrazor.validator().chain(function (obj){
             return 'instrument_name' in obj;
-        };
+        });
 
-        this.is_guitar = occamsrazor.chain(this.is_instrument, function (obj){
+        this.is_guitar = this.is_instrument.chain( function (obj){
             return 'nStrings' in obj;
         });
 
-        this.is_electricguitar = occamsrazor.chain(this.is_guitar, function (obj){
+        this.is_electricguitar = this.is_guitar.chain(function (obj){
             return 'ampli' in obj;
         });
 
@@ -126,9 +126,9 @@ Test with more than one validators (and argument)
 */
 module( "Test more than one validator", {
     setup: function (){
-        this.is_number = function (obj){
+        this.is_number = occamsrazor.validator().chain(function (obj){
             return typeof obj === 'number' && ! isNaN(obj);
-        };
+        });
 
         this.sum = occamsrazor()
             .add([this.is_number, this.is_number, this.is_number], function (a,b,c){
@@ -150,15 +150,15 @@ testing
 */
 module( "Pubsub and default stringvalidator", {
     setup: function (){
-        this.is_instrument = function (obj){
+        this.is_instrument = occamsrazor.validator().chain(function (obj){
             return 'instrument_name' in obj;
-        };
+        });
 
-        this.is_guitar = occamsrazor.chain(this.is_instrument, function (obj){
+        this.is_guitar = this.is_instrument.chain(function (obj){
             return 'nStrings' in obj;
         });
 
-        this.is_electricguitar = occamsrazor.chain(this.is_guitar, function (obj){
+        this.is_electricguitar = this.is_guitar.chain( function (obj){
             return 'ampli' in obj;
         });
 
@@ -212,7 +212,7 @@ module( "stringValidator" );
 
 test("stringValidator using string", function() {
 
-    var is_hello = occamsrazor.stringValidator('hello');
+    var is_hello = occamsrazor.validator().match('hello');
     ok(!!is_hello('hello'), 'string validator ok');
     ok(!is_hello('nothello'), 'string validator ko');
 
@@ -220,7 +220,7 @@ test("stringValidator using string", function() {
 
 test("stringValidator using regexp", function() {
 
-    var is_hello = occamsrazor.stringValidator(/hello/);
+    var is_hello = occamsrazor.validator().match(/hello/);
     ok(!!is_hello('hello'), 'string validator ok');
     ok(!!is_hello('ishello'), 'string validator ok');
     ok(!is_hello('ishelo'), 'string validator ko');
@@ -243,7 +243,7 @@ module( "isAnything" );
 
 test("isAnything works", function() {
 
-    ok(occamsrazor.isAnything({}), 'isAnything validator ok');
+    ok(occamsrazor.validator()({}), 'isAnything validator ok');
 
 });
 
@@ -256,14 +256,6 @@ test("isAnything is used when validator is null", function() {
     equals(works('anything'),'anything', 'used isAnything instead of null');
 
 });
-
-test("isAnything is lower than any other validator", function() {
-    var isany = occamsrazor.isAnything({});
-    var validator = occamsrazor.validator(function (){return true;})({});
-    ok(Number(isany) < Number(validator), 'is lower');
-
-});
-
 
 module( "wrapConstructor" );
 

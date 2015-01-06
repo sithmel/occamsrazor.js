@@ -1,16 +1,4 @@
-all the validator logic is kinda of broken now.
-
-occamsrazor.validator() == 1
-
-occamsrazor.validator(func) == 2
-
-occamsrazor.validator(func1, func2) == 2 // clearly wrong
-
-occamsrazor.validator()
-.chain()
-.chain()
-
-occamsrazor.js 2.4.0
+occamsrazor.js 3.0.0
 ====================
 Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
@@ -47,8 +35,8 @@ The problem is: how can we pick the right adapter for each shape ?
 This is where occamsrazor.js enter.
 First of all we need some validator. A validator will help to identify what shape represent an object::
 
-    var has_radius = occamsrazor.has('radius');
-    var has_width = occamsrazor.has('width');
+    var has_radius = occamsrazor.validator().has('radius');
+    var has_width = occamsrazor.validator().has('width');
 
 I can use this validators to determine the kind of an object.
 A shape has a radius ? It's a circle !
@@ -96,23 +84,18 @@ Now we add another kind of shape, a rectangle::
 
     var shape4 = {width: 5, height: 6};
 
-We could write another validator (using a function)::
+A rectangle has both width and height so we will define a more specific validator::
 
-    var has_width_and_height = occamsrazor.validator(function (obj){
-        return  'width' in obj && 'height' in obj;
-    });
+    var has_width_and_height = occamsrazor.validator().has('width').has('height');
 
-But this won't work correctly because both has_width and has_width_and_height return true and it's impossible to choose between them.
-We can solve this problem introducing a property of the validators: the specificity score.
-A validator can return a positive number to indicate how much is specific.
-occamsrazor.validator can take more than one function and "chain" together more validators. In this case we extends the "has_width" validator::
+Any time you extend a validator you get a new one so you could extend the previous one::
 
-    var has_width_and_height = occamsrazor.validator(occamsrazor.has('width'), occamsrazor.has('height'));
+    var has_width_and_height = has_width.has('height');
 
-The score of this validator is the sum of the scores of every single validator plus one (in this case 3).
-For the sake of clarity we should write a "has_width_height_depth" validator like this::
+A validator returns a positive number (score) to indicate how much is specific.
+The score of this validator augment every time is chained with another function::
 
-    var is_parallelepiped = occamsrazor.validator(occamsrazor.has('width'), occamsrazor.has('height'), occamsrazor.has('depth'));
+    var is_parallelepiped = has_width_and_height.has('depth');
 
 This validator can return 4 (validate) or 0 (not validate).
 The general rule is: a validator must return a positive number if the validation is positive or a Javascript falsy value if the validation is negative.
@@ -329,8 +312,8 @@ To make everything simpler we can use a special feature (explained in the sectio
     );
 
 
-Writing Validators
-==================
+More about validators
+=====================
 A validator is a simple function. When it runs against an object, it usually returns a positive number if the validation is ok or 0 if it fails.
 The number is an index of specificity. The number 1 is reserved for the most generic validation (useful for defaults).
 General validators returns a number bigger than 1.
@@ -408,31 +391,55 @@ Validator function
 
 Syntax::
 
-    occamsrazor.validator(cb);
+    occamsrazor.validator();
 
-Arguments:
-    cb: a function taking an object and returning a boolean
+Returns a generic validator. It will validate every object with score 1.
 
-A function that takes an argument and returns a Javascript falsy value or a positive number.
-A falsy value means that the argument passed is not valid. A positive number represent that
-the argument passed is valid. The number is equal to the number of checks performed by the validator.
+occamsrazor.validator().chain
+-----------------------------
 
-occamsrazor.validator
----------------------
-
-Define a validator and chain validators together.
+Add a check to the validator, and increment the score by 1.
 
 Syntax::
 
-    var validator = occamsrazor.validator(validator1, validator2 ...);
+    var validator = occamsrazor.validator().chain(function (obj){//return true or false});
 
 Arguments:
 
-- 1 or more validators
+- a function taking an object and returning true or false
 
-Returns a validator function. A validator get an argument and returns a positive number (>=2) if it pass the validation.
-Or 0 if it doesn't pass.
-occamsrazor.validator() without arguments returns occamsrazor.isAnything.
+occamsrazor.validator().match
+-----------------------------
+
+Add a check if the object match a string or a regular expression.
+
+Syntax::
+
+    var validator = occamsrazor.validator().match(string);
+
+    var validator = occamsrazor.validator().match(regular_expression);
+
+occamsrazor.validator().has
+---------------------------
+
+Check if an object has a property.
+
+Syntax::
+
+    var validator = occamsrazor.validator().has(string);
+
+occamsrazor.validator().isPrototypeOf
+-------------------------------------
+Check if an object is a prototype of another.
+
+Syntax::
+
+    var validator = occamsrazor.validator().isPrototypeOf(obj);
+
+occamsrazor.shortcut_validators
+-------------------------------
+It is an object where you can add your shortcut validators.
+"match", "has" and "isPrototypeOf" are added here but you can add your own if you need.
 
 occamsrazor.adapters
 --------------------
@@ -508,43 +515,6 @@ delete a function from the adapters. Syntax::
     adapters.remove(func);
 
 returns the adapters (this method can be chained)
-
-occamsrazor.isAnything
-----------------------
-It is a validator function returning True::
-
-    occamsrazor.isAnything = function (obj){
-        return true;
-    };
-
-It has the least possible specificity (1).
-
-occamsrazor.stringValidator
----------------------------
-
-Returns a validator function that returns a positive number if the string is equal or the regular expression matches.
-
-Syntax::
-
-    var validator = occamsrazor.stringValidator(string);
-
-    var validator = occamsrazor.stringValidator(regular_expression);
-
-occamsrazor.has
----------------
-Returns a validator function that returns a positive number if an object has a property.
-
-Syntax::
-
-    var validator = occamsrazor.has(string);
-
-occamsrazor.isPrototypeOf
--------------------------
-Returns a validator function that returns a positive number if an object is a prototype of another.
-
-Syntax::
-
-    var validator = occamsrazor.isPrototypeOf(obj);
 
 About the name
 ==============
