@@ -8,9 +8,9 @@
  * maurizio.lupo gmail com
  *
  * GPL license/MIT license
- * 6 Sep 2015
+ * 6 Jan 2015
  *
- * version 3.0.0
+ * version 3.0.1
  ******************************************************************************/
 
 
@@ -275,7 +275,7 @@
     };
 
     // registries
-    var _registries = (window || global);
+    var _registries = typeof window == "undefined" ? global : window;
 
     if(!_registries._occamsrazor_registries){
         _registries._occamsrazor_registries = {};
