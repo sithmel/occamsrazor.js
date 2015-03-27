@@ -22,5 +22,10 @@
   "author": "Maurizio Lupo <maurizio.lupo@gmail.com>",
   "license": "gpl-mit",
   "readmeFilename": "README.rst",
-  "gitHead": "38821d9d552829b8aeef15fd6adeae86189c18db"
+  "gitHead": "38821d9d552829b8aeef15fd6adeae86189c18db",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-qunit": "^0.5.2",
+    "grunt-release": "^0.12.0"
+  }
 }

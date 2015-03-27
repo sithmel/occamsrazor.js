@@ -229,7 +229,7 @@ test("stringValidator using regexp", function() {
 
 module( "this" );
 
-test("stringValidator using string", function() {
+test("apply this to an adapter", function() {
 
     var hello = occamsrazor().add(function (){
         return "hello "  + this;
@@ -238,6 +238,23 @@ test("stringValidator using string", function() {
     equal(hello.apply('world!'), 'hello world!', 'This works correctly!');
 
 });
+
+test("adapter as method", function() {
+    var Factory = function (){
+        this.greeting = 'world!';
+    };
+
+    Factory.prototype.method = occamsrazor().add(function (){
+        return "hello "  + this.greeting;
+    });
+
+    var obj = new Factory;
+
+    equal(obj.method(), 'hello world!', 'This works correctly!');
+
+
+});
+
 
 module( "isAnything" );
 

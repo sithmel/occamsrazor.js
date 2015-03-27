@@ -1,18 +1,9 @@
 /******************************************************************************
  *
  * occamsrazor.js
- * by Maurizio Lupo
+ * by Maurizio Lupo (sithmel)
  *
- * http://sithmel.blogspot.com
- * @sithmel
- * maurizio.lupo gmail com
- *
- * GPL license/MIT license
- * 6 Jan 2015
- *
- * version 3.0.1
  ******************************************************************************/
-
 
 (function () {
     "use strict";
