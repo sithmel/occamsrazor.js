@@ -109,6 +109,11 @@ As a matter of fact if you execute both has_width and has_width_and_height valid
     has_width_and_height(shape4); // 3
     has_width(shape4);    // 2
 
+You can also use the "score" method for getting the maximum score of a validator::
+
+    has_width_and_height.score(); // 3
+    has_width.score(); // 2
+
 shape4 is both a rectangle and a square but the has_width_and_height validator is more specific.
 Using this validator we can add another adapter::
 
@@ -126,6 +131,18 @@ When you call the adapter registry it will returns the most specific adapter (ba
     var adapter = shapeMath(shape4); // rectangleMath(shape4)
     adapter.perimeter();
 
+Default adapter
+===============
+
+If you call an adapter and there is no match with the registered functions you get an exception::
+
+    shapeMath(not_a_shape); // it throws: new Error("Function not found")
+
+It might happen that you need a generic adapter to be called, when no other adapter fit. You can register a default using notFound::
+
+    shapeMath.notFound(function (){return;})
+    shapeMath(not_a_shape); // returns undefined
+
 Deleting an adapter
 ===================
 
@@ -136,7 +153,6 @@ If you want to delete an adapter you can use the "remove" method::
 The remove method is chainable::
 
     shapeMath.remove(rectangleMath).remove(squareMath);
-
 
 Multiadapters
 =============
@@ -392,6 +408,16 @@ Syntax::
 
 Returns a generic validator. It will validate every object with score 1.
 
+occamsrazor.validator().score
+-----------------------------
+
+Syntax::
+
+    a_validator.score();
+
+Returns the score returned by this validator. It can be useful for debugging or introspection.
+
+
 occamsrazor.validator().chain
 -----------------------------
 
@@ -419,11 +445,15 @@ Syntax::
 occamsrazor.validator().has
 ---------------------------
 
-Check if an object has a property.
+Check if an object has one or more properties.
 
 Syntax::
 
-    var validator = occamsrazor.validator().has(string);
+    var validator = occamsrazor.validator().has(propName);
+
+        or
+
+    var validator = occamsrazor.validator().has([propName1, propName2, ...]);
 
 occamsrazor.validator().isPrototypeOf
 -------------------------------------
@@ -432,6 +462,14 @@ Check if an object is a prototype of another.
 Syntax::
 
     var validator = occamsrazor.validator().isPrototypeOf(obj);
+
+occamsrazor.validator().instanceOf
+-------------------------------------
+Check if an object is an instance of a constructor.
+
+Syntax::
+
+    var validator = occamsrazor.validator().instanceOf(ContructorFunc);
 
 occamsrazor.shortcut_validators
 -------------------------------
@@ -486,7 +524,19 @@ Syntax::
     adapters.add([an array of validators], func)
 
 returns the adapters (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
-If a validator is null it become occamsrazor.isAnything.
+If a validator is null it become occamsrazor.validator().
+
+adapters.notFound
+---------------------------------------------------
+
+Add a default function to the adapters.
+This will be called whenever no others adapters fit.
+
+Syntax::
+
+    adapters.notFound(func)
+
+returns the adapters (this method can be chained).
 
 adapters.addNew (alias .addConstructor)
 ---------------------------------------------------
@@ -503,7 +553,7 @@ Syntax::
     adapters.addNew([an array of validators], func)
 
 returns the adapters (this method can be chained). If the validator is a string or a regular expression is converted automatically to a function using occamsrazor.stringValidator
-If a validator is null it is converted as occamsrazor.isAnything.
+If a validator is null it is converted as occamsrazor.validator().
 
 adapters.remove (alias .off)
 ------------------------------------

@@ -350,3 +350,76 @@ test("testing default registry", function() {
         test2 = occamsrazor.registry()('test');
     equals(test2(), 'ok');
 });
+
+module( "notFound" );
+
+test("full adapter hierarchy", function() {
+    var isAnything = occamsrazor.validator();
+    var isNumber = occamsrazor.validator().chain(function (obj){
+      return typeof obj === "number";
+    });
+
+    var notValid = function (a){return "not valid";};
+    var notFound = function (a){return "not found";};
+    var square = function (a){return a*a;};
+
+    var getSquare = occamsrazor()
+    .notFound(notFound);
+
+    equal(getSquare(2), "not found", "get specific adapter");
+
+    getSquare
+    .add(isAnything, notValid);
+
+    equal(getSquare("a"), "not valid", "get less specific adapter");
+    equal(getSquare(), "not found", "get fallback adapter");
+
+    getSquare
+    .add(isNumber, square);
+
+    equal(getSquare(2), 4, "get specific adapter");
+    equal(getSquare("a"), "not valid", "get less specific adapter");
+    equal(getSquare(), "not found", "get fallback adapter");
+});
+
+module( "multiple matches" );
+
+test("more than one adapter", function() {
+    var isAnything = occamsrazor.validator();
+
+    var func1 = function (a){return "func1";};
+    var func2 = function (a){return "func2";};
+
+    var test = occamsrazor()
+    .add(isAnything, func1)
+    .add(isAnything, func2);
+
+    raises(test, "throws");
+});
+
+module( "validator score" );
+
+test("more than one adapter", function() {
+    var isAnything = occamsrazor.validator();
+    var hasWidth = isAnything.has('width');
+    var hasHeight_hasWidth = hasWidth.has('height');
+
+    equal(isAnything.score(), 1, "isAnything has score of 1");
+    equal(hasWidth.score(), 2, "hasWidth has score of 2");
+    equal(hasHeight_hasWidth.score(), 3, "hasHeight_hasWidth has score of 3");
+});
+
+module( "validator has" );
+
+test("single/multiple -has-", function() {
+    var isAnything = occamsrazor.validator();
+    var hasWidth = isAnything.has('width');
+    var hasHeight_hasWidth = isAnything.has(['width', 'height']);
+
+    equal(isAnything.score(), 1, "isAnything has score of 1");
+    equal(hasWidth.score(), 2, "hasWidth has score of 2");
+    equal(hasHeight_hasWidth.score(), 2, "hasHeight_hasWidth has score of 2");
+
+    equal(hasWidth({width: 1, height: 2}), 2, "match1");
+    equal(hasHeight_hasWidth({width: 1, height: 2}), 2, "match2");
+});

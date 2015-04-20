@@ -36,10 +36,19 @@
             };
         },
         has: function (attr){
-            return function (obj){return attr in obj;};
+            attr = Array.isArray(attr) ? attr : [attr];
+            return function (obj){
+              for(var i = 0, len = attr.length; i < len;i++){
+                if (!(attr[i] in obj)) return false;
+              }
+              return true;
+            };
         },
         isPrototypeOf: function (proto){
             return function (obj){return proto.isPrototypeOf(obj);};
+        },
+        instanceOf: function (constructor){
+            return function (obj){return obj instanceof constructor;};
         }
     };
 
@@ -60,6 +69,10 @@
 
         v.chain = function (func){
             return _validator(funcs.concat(func));
+        };
+
+        v.score = function (){
+            return funcs.length;
         };
 
         // shortcut validators
@@ -173,7 +186,7 @@
 
     //get all the functions that validates with args. Sorted by score
     //functions is a list of obj (func, validators)
-    var filter_and_sort = function (args, functions) {
+    var filter_and_sort = function (args, functions, throwOnDuplicated) {
         var i, n, getScore, score, decorated_components = [],
             func, validators, funcs = [];
 
@@ -196,6 +209,11 @@
         }
         //sort
         decorated_components.sort().reverse();
+
+        if (throwOnDuplicated && decorated_components.length > 1 && decorated_components[0][0] === decorated_components[1][0]){
+            throw new Error("More than one adapter fits");
+        }
+
         //undecorate
         for (n = 0; n < decorated_components.length; n++) {
             funcs.push(decorated_components[n][1]);
@@ -209,7 +227,7 @@
     //The arguments must match with the validators of a registered function
     //functions is a list of obj (func, validators)
     var getOne = function (args, functions, context) {
-        var funcs = filter_and_sort(args, functions);
+        var funcs = filter_and_sort(args, functions, true);
         if (!funcs.length) {
             throw new Error("Function not found");
         }
@@ -261,6 +279,10 @@
             return getAll(Array.prototype.slice.call(arguments), functions, this);
         };
 
+        occamsrazor.notFound = function (func) {
+            add(functions, func);
+            return occamsrazor;
+        };
 
         return occamsrazor;
     };

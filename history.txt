@@ -1,5 +1,15 @@
 Changelog
 
+3.1.0 (2015/04/20)
+==================
+
+- fix on commonjs snippet
+- added notFound method to adapter
+- now raises an exception if more than one adapter is found
+- added debug score to validators
+- the "has" validator can now match more than one property
+- added the instanceOf validator
+
 3.0.2 (2015/03/27)
 ==================
 
