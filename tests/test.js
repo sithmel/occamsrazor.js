@@ -423,3 +423,22 @@ test("single/multiple -has-", function() {
     equal(hasWidth({width: 1, height: 2}), 2, "match1");
     equal(hasHeight_hasWidth({width: 1, height: 2}), 2, "match2");
 });
+
+test("single/multiple -has- object", function() {
+    var isAnything = occamsrazor.validator();
+    var hasWidth10 = isAnything.has({'width': '10'});
+    var hasX10 = isAnything.has({
+      center: {
+        x: "10", y: undefined
+      }
+    });
+
+    equal(hasWidth10({width: "10"}), 2, "match");
+    ok(!hasWidth10({width: 1}), "don't match");
+
+    equal(hasX10({center: {x:"10", y:"1"}}), 2, "match");
+    ok(!hasX10({center: {x:"11", y:"1"}}), "don't match");
+    ok(!hasX10({center: {x:"10"}}), "don't match");
+    ok(!hasX10({center: "1"}), "don't match");
+
+});

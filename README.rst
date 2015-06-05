@@ -445,7 +445,7 @@ Syntax::
 occamsrazor.validator().has
 ---------------------------
 
-Check if an object has one or more properties.
+Check if an object has one or more properties (optionally the values).
 
 Syntax::
 
@@ -454,6 +454,24 @@ Syntax::
         or
 
     var validator = occamsrazor.validator().has([propName1, propName2, ...]);
+
+        or
+
+    var validator = occamsrazor.validator().has({propName1: "string", propName2: {propName3: "string"}});
+
+The third for allows to perform the validation checking recursively the properties of an object. Values of the map can have 3 different values:
+
+    * undefined: check only if the key is defined
+    * a string or a regular expression: the "match" validator will be used
+    * an object: the subobject will be checked recursively
+
+For example::
+
+    var hasCenterX = occamsrazor.validator({center: {x: undefined}});
+    // will match {center: {x: "10"}}
+
+    var hasCenterX10 = occamsrazor.validator({center: {x: "10"}});
+    // will match {center: {x: "10"}} but not {center: {x: "11"}}
 
 occamsrazor.validator().isPrototypeOf
 -------------------------------------

@@ -36,10 +36,34 @@
             };
         },
         has: function (attr){
-            attr = Array.isArray(attr) ? attr : [attr];
+            var i, len, o = {};
+
+            if (Array.isArray(attr)){
+              for(i = 0, len = attr.length; i < len;i++){
+                o[attr[i]] = undefined;
+              }
+            }
+            else if (typeof attr === "object"){
+                o = attr;
+            }
+            else { // string
+                o[attr] = undefined;
+            }
             return function (obj){
-              for(var i = 0, len = attr.length; i < len;i++){
-                if (!(attr[i] in obj)) return false;
+              if (typeof obj !== "object") return false;
+              for (var k in o){
+                  if (!(k in obj)) return false;
+                  if (typeof o[k] === 'string' || (typeof o[k] === 'object' && 'test' in o[k])){
+                    if (!shortcut_validators.match(o[k])(obj[k])){
+                      return false;
+                    }
+                  }
+                  else if (typeof o[k] === 'object'){
+                    if (!shortcut_validators.has(o[k])(obj[k])){
+                      return false;
+                    }
+                  }
+                  // undefined continue
               }
               return true;
             };

@@ -1,5 +1,10 @@
 Changelog
 
+3.2.0 (2015/06/05)
+==================
+
+- the "has" validator can now match properties recursively
+
 3.1.0 (2015/04/20)
 ==================
 
