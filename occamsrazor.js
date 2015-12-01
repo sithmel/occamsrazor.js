@@ -63,6 +63,9 @@
                       return false;
                     }
                   }
+                  else if (typeof o[k] === 'function'){
+                    return o[k](obj[k]);
+                  }
                   // undefined continue
               }
               return true;
@@ -79,7 +82,7 @@
     var _validator = function (funcs){
         var k;
         funcs = funcs || [isAnything];
-        var v = function (obj){
+        var v = function validator(obj){
             var i, score, total = 0;
             for (i = 0; i < funcs.length; i++) {
                 score = funcs[i](obj);
@@ -89,6 +92,12 @@
                 total += score; // 1 + true === 2
             }
             return total;
+        };
+
+        v.prototype = {
+          toString: function (){
+            return "validator";
+          }
         };
 
         v.chain = function (func){

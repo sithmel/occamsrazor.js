@@ -409,6 +409,14 @@ test("more than one adapter", function() {
     equal(hasHeight_hasWidth.score(), 3, "hasHeight_hasWidth has score of 3");
 });
 
+module( "validator type" );
+
+test("validator metadata", function() {
+  var isAnything = occamsrazor.validator();
+
+  equal(isAnything.name, "validator", "name is correct");
+});
+
 module( "validator has" );
 
 test("single/multiple -has-", function() {
@@ -440,5 +448,17 @@ test("single/multiple -has- object", function() {
     ok(!hasX10({center: {x:"11", y:"1"}}), "don't match");
     ok(!hasX10({center: {x:"10"}}), "don't match");
     ok(!hasX10({center: "1"}), "don't match");
+
+});
+
+test("-has- can use functions", function() {
+  var isAnything = occamsrazor.validator();
+  var hasWidthbetween5and10 = isAnything.has({width: function (w){
+    return w >= 5 && w <=10;
+  }});
+
+  equal(hasWidthbetween5and10({width: 8}), 2, "match");
+  equal(hasWidthbetween5and10({width: 12}), null, "don't match");
+  equal(hasWidthbetween5and10({width: 4}), null, "don't match");
 
 });
