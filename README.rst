@@ -1,6 +1,6 @@
-occamsrazor.js
-==============
-Occamsrazor.js helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
+occamsrazor
+===========
+Occamsrazor helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
 
 Its goal is to keep the code simple to extend and test.
@@ -32,7 +32,7 @@ Because every kind of shape needs different calculations, you create an adapter 
 
 The problem is: how can you pick the right adapter for each shape ?
 
-This is where occamsrazor.js enter.
+This is where occamsrazor enter.
 First of all you need some validator. A validator will help to identify what "shape" of the object::
 
     var has_radius = occamsrazor.validator().match(['radius']);
@@ -81,7 +81,7 @@ The score represent how well the object fit (its specificity). For example::
 
     var isAnything = occamsrazor.validator();
 
-occamsrazor.validator() creates the simplest validator. It matches anything with score 1.
+occamsrazor.validator() creates the simplest validator. It matches anything with score 1::
 
     isAnything('hello'); // returns 1
     isAnything({width: 10}); // returns 1
@@ -142,7 +142,7 @@ You can also pass a string or a regular expression for matching a string::
     is_hello('hello');
     contains_nuts('hazelnut');
 
-Or numbers:
+Or numbers::
 
     var is_ten = occamsrazor.validator().match(10);
     is_ten(10);
@@ -188,7 +188,10 @@ If you need a custom validator you can extend the object occamsrazor.shortcut_va
 Of course you can combine all the methods we have seen so far::
 
     // this will have a specificity of 4
-    var is_instance_a_square = occamsrazor.validator().isInstanceOf(Rect).match(['width', 'height']).isSquare();
+    var is_instance_a_square = occamsrazor.validator()
+        .isInstanceOf(Rect)
+        .match(['width', 'height'])
+        .isSquare();
 
 Adding a more specific adapter
 ==============================
@@ -417,11 +420,11 @@ If you don't specify a specific registry you'll get the "default" registry::
 Syntax and reference
 ====================
 
-Importing occamsrazor.js
-------------------------
+Importing occamsrazor
+---------------------
 Occamsrazor can be imported in a traditional way::
 
-    <script src="lib/occamsrazor.js"></script>
+    <script src="occamsrazor.js"></script>
 
 or using AMD (require.js).
 You can also use it in node.js::
@@ -463,7 +466,7 @@ Arguments:
 occamsrazor.validator().match
 -----------------------------
 
-Add a check using a
+Add a check to the validator, it uses a special syntax (used by default by .add).
 
 Syntax::
 
@@ -477,7 +480,7 @@ Syntax::
 
     var validator = occamsrazor.validator().match({propName1: "string", propName2: {propName3: "string"}});
 
-This form allows to perform the validation checking recursively, walking the properties of an object.
+This last form allows to perform the validation check recursively, walking the properties of the object.
 
 For example::
 
@@ -517,7 +520,7 @@ It is an object where you can add your shortcut validators.
 occamsrazor.adapters
 --------------------
 
-returns adapters.
+returns an adapter registry.
 
 Syntax::
 
@@ -583,6 +586,20 @@ delete a function from the adapters. Syntax::
     adapters.remove(func);
 
 returns the adapters (this method can be chained)
+
+
+registry
+------------------------------------
+
+Create a registry in the global namespace (window or global).
+
+Syntax::
+
+    occamsrazor.registry('math');
+
+You can use a registry to register an adapter::
+
+    registry('functions');        
 
 About the name
 ==============
