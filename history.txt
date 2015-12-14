@@ -1,11 +1,20 @@
 Changelog
 
+4.0.0 (2015/12/14)
+==================
+
+- added shorter syntax for add function
+- removed "addNew" function. You can use wrapConstructor instead
+- added "one" method
+- new easier validator syntax
+- removed old deprecated methods (publish, subscribe)
+
 3.3.0 (2015/12/01)
 ==================
 
 - the "has" validator can use functions to match properties
 - documentation fixes
-- validator function has the name property set 
+- validator function has the name property set
 
 3.2.0 (2015/06/05)
 ==================
