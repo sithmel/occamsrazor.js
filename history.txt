@@ -1,5 +1,10 @@
 Changelog
 
+4.1.0 (2015/12/18)
+==================
+
+- match validator now can take null and booleans
+
 4.0.0 (2015/12/14)
 ==================
 

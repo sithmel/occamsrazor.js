@@ -1,4 +1,4 @@
-occamsrazor
+Occamsrazor
 ===========
 Occamsrazor helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
@@ -13,8 +13,8 @@ Let's say you have some objects::
     var shape2 = {radius: 5};
     var shape3 = {width: 5};
 
-Every object represents a different shape. you need to calculate some properties of these objects. For example areas and perimeters.
-Because every kind of shape needs different calculations, you create an adapter for every type of object::
+Every object represents a different shape. You need to calculate some properties of these objects. For example areas and perimeters.
+Because every type of shape needs different calculations, you create an adapter for every type of object::
 
     var circleMath = function (circle){
         return {
@@ -65,19 +65,19 @@ Conceptually an adapter is a function returning an object but nothing prevents y
 
 Why use adapters
 ================
-Maybe you are thinking why using an adapter when I can just extend an object using prototype or copying attributes and methods.
+Maybe you are thinking why using an adapter when I can just extend an object using its prototype or copying attributes and methods.
 There are two fundamentals problems with messing directly with objects:
 
 - the method name we choose can conflicts with another one. Generally speaking patches can easily become incompatible between each others
 - it's difficult to test an extension in isolation
 
-Using adapters promotes the open/close principle (https://en.wikipedia.org/wiki/Open/closed_principle). They are easy to test and to add functionalities without changing already tested code base.
+Using adapters promotes the open/close principle (https://en.wikipedia.org/wiki/Open/closed_principle). They are easy to test and they allow to add functionalities without changing already tested code base.
 
 More about validators
 =====================
 Ultimately a validator is a function. When it runs against an object, it returns a falsy value or a score.
 The falsy value means that an object doesn't fit in the validator's constraints.
-The score represent how well the object fit (its specificity). For example::
+The score represent how well the object fits (its specificity). For example::
 
     var isAnything = occamsrazor.validator();
 
@@ -109,7 +109,7 @@ You can go on having a more specific validator::
         return 'wings' in obj;
     });
 
-Every validator ha a function "score" that returns its specificity::
+Every validator has a function "score" that returns its specificity::
 
     isAnything.score()        // 1
     hasWheels.score()         // 2
@@ -147,6 +147,7 @@ Or numbers::
     var is_ten = occamsrazor.validator().match(10);
     is_ten(10);
 
+It works for booleans and null in the same way.
 If you pass an array of strings it will match with an object containing all the attributes with those names::
 
     var has_width_and_height = occamsrazor.validator().match(['width', 'height']);
@@ -196,7 +197,7 @@ Of course you can combine all the methods we have seen so far::
 Adding a more specific adapter
 ==============================
 Validators with different scores allow to choose different adapters.
-Now add another kind of shape, a rectangle::
+Now add another type of shape, a rectangle::
 
     var shape4 = {width: 5, height: 6};
 
@@ -208,7 +209,7 @@ You have already seen that any time you extend a validator, you get a new one so
 
     var has_width_and_height = has_width.match(['height']); // score 3
 
-Look out: this is different from defining a validator like this::
+Look out! this is different from defining a validator like this::
 
     var wrong_has_width_and_height = occamsrazor.validator().match(['width', 'height']); // score 2
 
@@ -402,6 +403,16 @@ To make the syntax more intuitive "add" and "all" have the aliases "on" and "tri
 
     pubsub.trigger("selected", {radius: 10});
 
+Of course you can remove the event using ".off" (an alias of remove), you have to pass to it the same function, though::
+
+    pubsub.off("selected", has_radius, func);
+
+If you need to handle the event only once there is a special function ".one"::
+
+    pubsub.one("selected", has_radius, function (evt, circle){
+      console.log('This is executed only once');
+    });
+
 Registries
 ==========
 This helper function is useful to group adapters in registries::
@@ -450,37 +461,36 @@ Syntax::
 Returns the score returned by this validator. It can be useful for debugging or introspection.
 
 
-occamsrazor.validator().chain
------------------------------
-
-Add a check to the validator, and increment the score by 1.
-
-Syntax::
-
-    var validator = occamsrazor.validator().chain(function (obj){//return true or false});
-
-Arguments:
-
-- a function taking an object and returning true or false
-
 occamsrazor.validator().match
 -----------------------------
 
-Add a check to the validator, it uses a special syntax (used by default by .add).
+Add a check to the validator, it uses a special syntax (used by default by .add, .one).
 
 Syntax::
 
-    var validator = occamsrazor.validator().match(function); // the same as chain
+    // execute a function against the value: returns true or false
+    var validator = occamsrazor.validator().match(function);
 
+    // matches if value is equal to string
     var validator = occamsrazor.validator().match(string);
 
+    // matches if value is equal to null
+    var validator = occamsrazor.validator().match(null);
+
+    // matches if value is equal to the boolean
+    var validator = occamsrazor.validator().match(boolean);
+
+    // matches if value matches with the regular expression
     var validator = occamsrazor.validator().match(regular_expression);
 
+    // matches if these properties are defined in the object
     var validator = occamsrazor.validator().match([array of property names]);
 
+    // deep matching
     var validator = occamsrazor.validator().match({propName1: "string", propName2: {propName3: "string"}});
 
 This last form allows to perform the validation check recursively, walking the properties of the object.
+In a property is undefined the value will match any value.
 
 For example::
 
@@ -566,6 +576,10 @@ Syntax::
 
 returns the adapters (this method can be chained). The validator will be converted automatically to a function using occamsrazor.match
 If a validator is null it becomes occamsrazor.validator().
+
+adapters.one
+---------------------------------------------------
+The same as .add but the function will be execute only once and them removed.
 
 adapters.notFound
 ---------------------------------------------------

@@ -22,7 +22,7 @@
   var shortcut_validators = {
     match: function (o){
       var i, len, out = {};
-      if (typeof o === 'string' || typeof o === 'number') {
+      if (typeof o === 'string' || typeof o === 'number' || typeof o === 'boolean' || o === null) {
         return function (s){
           return s === o;
         };

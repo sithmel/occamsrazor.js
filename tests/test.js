@@ -244,9 +244,9 @@ test("Notify an event with 1 handler (test default 'has' validator)", function()
 
 });
 
-module( "stringValidator" );
+module( "match" );
 
-test("stringValidator using string", function() {
+test("match using string", function() {
 
   var is_hello = occamsrazor.validator().match('hello');
   ok(!!is_hello('hello'), 'string validator ok');
@@ -254,7 +254,7 @@ test("stringValidator using string", function() {
 
 });
 
-test("stringValidator using regexp", function() {
+test("match using regexp", function() {
 
   var is_hello = occamsrazor.validator().match(/hello/);
   ok(!!is_hello('hello'), 'string validator ok');
@@ -262,6 +262,7 @@ test("stringValidator using regexp", function() {
   ok(!is_hello('ishelo'), 'string validator ko');
 
 });
+
 
 module( "this" );
 
@@ -507,3 +508,23 @@ test("-match- can use arrays", function() {
   equal(hasWidthAndHeight({width: 12}), null, "don't match");
 
 });
+
+test("-match- can use null", function() {
+  var isAnything = occamsrazor.validator();
+  var isNull = isAnything.match(null);
+
+  equal(isNull(null), 2, "match");
+  equal(isNull(1), null, "match");
+});
+
+test("-match- can use a boolean", function() {
+  var isAnything = occamsrazor.validator();
+  var isTrue = isAnything.match(true);
+  var isFalse = isAnything.match(false);
+
+  equal(isTrue(true), 2, "match");
+  equal(isTrue(false), null, "match");
+  equal(isFalse(false), 2, "match");
+  equal(isFalse(true), null, "match");
+});
+
