@@ -38,7 +38,7 @@
       else if (Array.isArray(o)){
         for(i = 0, len = o.length; i < len;i++){
           if (typeof o[i] !== 'string'){
-            throw new Error("Occamsrazor (validator): The validator argument must be a string, number, regular expression, a function, an object or an array of strings");
+            throw new Error("Occamsrazor (match): The argument can be a string, number, boolean, null, regular expression, a function, an object or an array of strings");
           }
           out[o[i]] = undefined;
         }
@@ -59,7 +59,7 @@
           return true;
         };
       }
-      throw new Error("Occamsrazor (validator): The validator argument must be a string, number, regular expression, a function, an object or an array of strings");
+      throw new Error("Occamsrazor (match): The argument can be a string, number, boolean, null, regular expression, a function, an object or an array of strings");
     },
     isPrototypeOf: function (proto){
       return function (obj){return proto.isPrototypeOf(obj);};

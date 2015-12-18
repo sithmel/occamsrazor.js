@@ -528,3 +528,13 @@ test("-match- can use a boolean", function() {
   equal(isFalse(true), null, "match");
 });
 
+test("-match- can use a function", function() {
+  var isAnything = occamsrazor.validator();
+  var isNotANumber = isAnything.match(isNaN);
+  var isArray = isAnything.match(Array.isArray);
+
+  equal(isNotANumber(NaN), 2, "match");
+  equal(isNotANumber(1), null, "match");
+  equal(isArray([1, 2, 3]), 2, "match");
+  equal(isArray(true), null, "match");
+});
