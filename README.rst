@@ -460,6 +460,14 @@ Syntax::
 
 Returns the score returned by this validator. It can be useful for debugging or introspection.
 
+occamsrazor.validator().important
+---------------------------------
+
+Syntax::
+
+    a_validator.important([n]);
+    
+It bumps the score by n (default to 64).   
 
 occamsrazor.validator().match
 -----------------------------

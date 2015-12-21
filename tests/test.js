@@ -538,3 +538,17 @@ test("-match- can use a function", function() {
   equal(isArray([1, 2, 3]), 2, "match");
   equal(isArray(true), null, "match");
 });
+
+test("important raise the score", function() {
+  var isAnything = occamsrazor.validator();
+  var hasNumber = isAnything.match(['number']);
+
+  var isAnythingImportant = isAnything.important();
+  var hasNumberImportant = hasNumber.important();
+
+  equal(isAnythingImportant('x'), 65, "match");
+  
+  equal(hasNumberImportant({}), null, "match");
+  equal(hasNumberImportant({number: 1}), 66, "match");
+  
+});

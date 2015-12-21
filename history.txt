@@ -1,5 +1,10 @@
 Changelog
 
+4.2.0 (2015/12/21)
+==================
+
+- added validator method: important. It bump the score by 64
+
 4.1.0 (2015/12/18)
 ==================
 

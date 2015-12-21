@@ -69,7 +69,7 @@
     }
   };
 
-  var _validator = function (funcs){
+  var _validator = function (baseScore, funcs){
     var k;
     funcs = funcs || [isAnything];
     var v = function validator(obj){
@@ -81,7 +81,7 @@
         }
         total += score; // 1 + true === 2
       }
-      return total;
+      return total + baseScore;
     };
 
     v.prototype = {
@@ -91,11 +91,16 @@
     };
 
     v.chain = function (func){
-      return _validator(funcs.concat(func));
+      return _validator(baseScore, funcs.concat(func));
     };
 
     v.score = function (){
-      return funcs.length;
+      return funcs.length + baseScore;
+    };
+
+    v.important = function(bump){
+      bump = bump || 64;
+      return _validator(baseScore + bump, funcs);
     };
 
     // shortcut validators
@@ -113,7 +118,7 @@
 
   //returns a validator (function that returns a score)
   var validator = function (){
-    return _validator();
+    return _validator(0);
   };
 
   var wrapConstructor = function (Constructor){
