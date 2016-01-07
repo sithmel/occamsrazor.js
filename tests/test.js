@@ -55,6 +55,10 @@ module( "Main", {
   }
 });
 
+test("Test size adapter", function() {
+  equal(this.player.size(), 2, "adapter has 2 functions" );
+});
+
 test("Test validation (sometimes valid)", function() {
   ok( !! this.is_electricguitar(this.guitar) === false, "Guitar is not electric" );
   ok( !! this.is_guitar(this.guitar) === true, "Guitar is ... a guitar" );
@@ -213,7 +217,9 @@ module( "Pubsub and default stringvalidator", {
 
 test("Notify an event with 3 handler", function() {
 
+  equal(this.pubsub.size(), 6, "adapter has 6 functions" );
   var outputs = this.pubsub.trigger('play', this.electricguitar);
+  equal(this.pubsub.size(), 5, "adapter has 5 functions" );
   var outputs2 = this.pubsub.trigger('play', this.electricguitar);
 
   ok(outputs.indexOf('Strumming electric guitar') !== -1, 'Called first handler');
@@ -547,8 +553,8 @@ test("important raise the score", function() {
   var hasNumberImportant = hasNumber.important();
 
   equal(isAnythingImportant('x'), 65, "match");
-  
+
   equal(hasNumberImportant({}), null, "match");
   equal(hasNumberImportant({number: 1}), 66, "match");
-  
+
 });

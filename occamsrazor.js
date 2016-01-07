@@ -169,7 +169,7 @@
   //add a function: func must be a function.
   //validators is an array of validators
   //functions is a list of obj (func, validators)
-  var add = function (functions, validators, func, times) {
+  var _add = function (functions, validators, func, times) {
     var i;
     for (i = 0; i < validators.length; i++){
       if (validators[i] === null){
@@ -189,7 +189,7 @@
 
   //remove a func from functions
   //functions is a list of obj (func, validators)
-  var remove = function (functions, func) {
+  var _remove = function (functions, func) {
     var i = 0;
 
     while (i < functions.length){
@@ -244,7 +244,7 @@
     if (typeof func.times !== "undefined"){
       func.times--;
       if (func.times === 0){
-        remove(functions, func.func);
+        _remove(functions, func.func);
       }
     }
   }
@@ -282,46 +282,50 @@
       return getOne(Array.prototype.slice.call(arguments), functions, this);
     };
 
-    occamsrazor.on = occamsrazor.add = function () {
+    occamsrazor.on = occamsrazor.add = function add() {
       var func = arguments[arguments.length - 1];
       var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
       if (typeof func !== 'function') {
         throw new Error("Occamsrazor (add): The last argument MUST be a function");
       }
 
-      add(functions, validators, func);
+      _add(functions, validators, func);
       return occamsrazor;
     };
 
-    occamsrazor.one =  function (validators, func) {
+    occamsrazor.one =  function one(validators, func) {
       var func = arguments[arguments.length - 1];
       var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
       if (typeof func !== 'function') {
         throw new Error("Occamsrazor (add): The last argument MUST be a function");
       }
 
-      add(functions, validators, func, 1);
+      _add(functions, validators, func, 1);
       return occamsrazor;
     };
 
-    occamsrazor.remove = occamsrazor.off = function (func) {
+    occamsrazor.size = function size() {
+      return functions.length;
+    };
+
+    occamsrazor.remove = occamsrazor.off = function remove(func) {
       if (typeof func !== 'function') {
         throw new Error("Occamsrazor (remove): The argument MUST be the function to delete");
       }
-      remove(functions, func);
+      _remove(functions, func);
       return occamsrazor;
     };
 
-    occamsrazor.all = occamsrazor.trigger = function () {
+    occamsrazor.all = occamsrazor.trigger = function all() {
       return getAll(Array.prototype.slice.call(arguments), functions, this);
     };
 
-    occamsrazor.notFound = function (func) {
+    occamsrazor.notFound = function notFound(func) {
       if (typeof func !== 'function') {
         throw new Error("Occamsrazor (notFound): you should pass a function");
       }
 
-      add(functions, [], func);
+      _add(functions, [], func);
       return occamsrazor;
     };
 

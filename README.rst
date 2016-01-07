@@ -466,8 +466,8 @@ occamsrazor.validator().important
 Syntax::
 
     a_validator.important([n]);
-    
-It bumps the score by n (default to 64).   
+
+It bumps the score by n (default to 64).
 
 occamsrazor.validator().match
 -----------------------------
@@ -609,6 +609,14 @@ delete a function from the adapters. Syntax::
 
 returns the adapters (this method can be chained)
 
+adapters.size
+-------------------------------------------------------
+
+Syntax::
+
+    adapters.size();
+
+returns the number of functions in the adapter.
 
 registry
 ------------------------------------
@@ -621,7 +629,7 @@ Syntax::
 
 You can use a registry to register an adapter::
 
-    registry('functions');        
+    registry('functions');
 
 About the name
 ==============
