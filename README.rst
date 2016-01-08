@@ -618,6 +618,15 @@ Syntax::
 
 returns the number of functions in the adapter.
 
+adapters.merge
+-------------------------------------------------------
+
+Syntax::
+
+    adapters1.merge(adapters2, adapters3, ...);
+
+returns an adapter registry that merge all the adapters.
+
 registry
 ------------------------------------
 

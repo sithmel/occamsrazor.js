@@ -59,6 +59,22 @@ test("Test size adapter", function() {
   equal(this.player.size(), 2, "adapter has 2 functions" );
 });
 
+test("Test merge adapter", function() {
+  var pianoPlayer = occamsrazor()
+    .add({keys: undefined}, function (){ return "playing the piano!"});
+
+  equal(this.player.size(), 2, "adapter has 2 functions" );
+  equal(pianoPlayer.size(), 1, "adapter has 1 functions" );
+
+  var newadapter = pianoPlayer.merge(this.player);
+  ok(pianoPlayer !== newadapter);
+  ok(pianoPlayer !== this.player);
+
+  equals(newadapter.size(), 3, "new adapter has 3 functions" );
+  equals(newadapter(this.guitar) , 'Strumming with guitar' ,"Execute guitar function" );
+  equals(newadapter({keys: 288}) , "playing the piano!" ,"Execute piano function" );
+});
+
 test("Test validation (sometimes valid)", function() {
   ok( !! this.is_electricguitar(this.guitar) === false, "Guitar is not electric" );
   ok( !! this.is_guitar(this.guitar) === true, "Guitar is ... a guitar" );

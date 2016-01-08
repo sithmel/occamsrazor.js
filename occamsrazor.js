@@ -276,8 +276,8 @@
   };
 
   //main function
-  var occamsrazor = function () {
-    var functions = [],
+  var _occamsrazor = function (adapterFuncs) {
+    var functions = adapterFuncs || [],
     occamsrazor = function () {
       return getOne(Array.prototype.slice.call(arguments), functions, this);
     };
@@ -293,7 +293,7 @@
       return occamsrazor;
     };
 
-    occamsrazor.one =  function one(validators, func) {
+    occamsrazor.one =  function one() {
       var func = arguments[arguments.length - 1];
       var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
       if (typeof func !== 'function') {
@@ -306,6 +306,18 @@
 
     occamsrazor.size = function size() {
       return functions.length;
+    };
+
+    occamsrazor.merge = function merge() {
+      var unFlattenAdapterFuncs = Array.prototype.map.call(arguments, function (adapter){
+        return adapter._functions();
+      });
+      var adapterFuncs = Array.prototype.concat.apply(functions, unFlattenAdapterFuncs)
+      return _occamsrazor(adapterFuncs);      
+    };
+
+    occamsrazor._functions = function _functions() {
+      return functions;
     };
 
     occamsrazor.remove = occamsrazor.off = function remove(func) {
@@ -360,25 +372,25 @@
   };
 
   //public methods
-  occamsrazor.validator = validator;
-  occamsrazor.shortcut_validators = shortcut_validators;
+  _occamsrazor.validator = validator;
+  _occamsrazor.shortcut_validators = shortcut_validators;
 
-  occamsrazor.adapters = occamsrazor;
-  occamsrazor.registry = registry;
+  _occamsrazor.adapters = _occamsrazor;
+  _occamsrazor.registry = registry;
 
-  occamsrazor.wrapConstructor = wrapConstructor;
+  _occamsrazor.wrapConstructor = wrapConstructor;
 
   // Expose occamsrazor as an AMD module
   if (typeof define === "function" && define.amd) {
-    define("occamsrazor", [], function () { return occamsrazor; });
+    define("occamsrazor", [], function () { return _occamsrazor; });
   }
   // Expose occamsrazor as an UMD module (common.js)
   else if (typeof exports === 'object'){
-    module.exports = occamsrazor;
+    module.exports = _occamsrazor;
   }
   else if (typeof window === 'object'){
     // Expose occamsrazor to the browser global object
-    window.occamsrazor = occamsrazor;
+    window.occamsrazor = _occamsrazor;
   }
 
 }());
