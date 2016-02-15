@@ -358,7 +358,7 @@
     var adapter = function (_registry){
       return function (function_name){
         if ( !( function_name in _registry) ){
-          _registry[function_name] = occamsrazor();
+          _registry[function_name] = _occamsrazor();
         }
         return _registry[function_name];
       };
