@@ -305,7 +305,7 @@
         throw new Error("Occamsrazor (add): The last argument MUST be a function");
       }
 
-      _add(functions, validators, func, 1);
+      var funcLength = _add(functions, validators, func, 1);
       for (var i = 0; i < stickyArguments.length; i++) {
         getAll(stickyArguments[i], [functions[funcLength - 1]], this);
       }
