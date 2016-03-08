@@ -142,6 +142,52 @@ test("Execute a function without arguments", function() {
 });
 
 /*
+sticky arguments
+*/
+module( "publish", {
+  setup: function (){
+    this.adapter = occamsrazor.adapters();
+  }
+});
+
+
+test("Trigger without publish", function() {
+  var executed = '';
+  this.adapter.on('match', function () {
+    executed += 'A';
+  });
+  this.adapter.on('notmatch', function () {
+    executed += 'B';
+  });
+  this.adapter.trigger('match');
+  this.adapter.on('match', function () {
+    executed += 'C';
+  });
+  this.adapter.on('notmatch', function () {
+    executed += 'D';
+  });
+  equals(executed , 'A' ,"Print test" );
+});
+
+test("Trigger with publish", function() {
+  var executed = '';
+  this.adapter.on('match', function () {
+    executed += 'A';
+  });
+  this.adapter.on('notmatch', function () {
+    executed += 'B';
+  });
+  this.adapter.stick('match');
+  this.adapter.on('match', function () {
+    executed += 'C';
+  });
+  this.adapter.on('notmatch', function () {
+    executed += 'D';
+  });
+  equals(executed , 'AC' ,"Print test" );
+});
+
+/*
 Test with more than one validators (and argument)
 */
 module( "Test more than one validator", {

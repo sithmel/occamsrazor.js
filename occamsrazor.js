@@ -185,6 +185,7 @@
       validators: validators,
       times: times
     });
+    return functions.length;
   };
 
   //remove a func from functions
@@ -276,8 +277,9 @@
   };
 
   //main function
-  var _occamsrazor = function (adapterFuncs) {
+  var _occamsrazor = function (adapterFuncs, stickyArgs) {
     var functions = adapterFuncs || [],
+        stickyArguments = stickyArgs || [],
     occamsrazor = function () {
       return getOne(Array.prototype.slice.call(arguments), functions, this);
     };
@@ -289,7 +291,10 @@
         throw new Error("Occamsrazor (add): The last argument MUST be a function");
       }
 
-      _add(functions, validators, func);
+      var funcLength = _add(functions, validators, func);
+      for (var i = 0; i < stickyArguments.length; i++) {
+        getAll(stickyArguments[i], [functions[funcLength - 1]], this);
+      }
       return occamsrazor;
     };
 
@@ -301,6 +306,9 @@
       }
 
       _add(functions, validators, func, 1);
+      for (var i = 0; i < stickyArguments.length; i++) {
+        getAll(stickyArguments[i], [functions[funcLength - 1]], this);
+      }
       return occamsrazor;
     };
 
@@ -313,7 +321,7 @@
         return adapter._functions();
       });
       var adapterFuncs = Array.prototype.concat.apply(functions, unFlattenAdapterFuncs)
-      return _occamsrazor(adapterFuncs);      
+      return _occamsrazor(adapterFuncs);
     };
 
     occamsrazor._functions = function _functions() {
@@ -330,6 +338,12 @@
 
     occamsrazor.all = occamsrazor.trigger = function all() {
       return getAll(Array.prototype.slice.call(arguments), functions, this);
+    };
+
+    occamsrazor.stick = function publish() {
+      var args = Array.prototype.slice.call(arguments);
+      stickyArguments.push(args);
+      return getAll(args, functions, this);
     };
 
     occamsrazor.notFound = function notFound(func) {

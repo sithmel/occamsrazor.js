@@ -413,6 +413,18 @@ If you need to handle the event only once there is a special function ".one"::
       console.log('This is executed only once');
     });
 
+In the way it works, you'll require to have event attached (with on) before triggering an event. You can also do the opposite. The "stick" method works like trigger but allows to keep the arguments published:
+
+pubsub.on("selected", has_radius, function (evt, circle){
+  console.log('Circle is selected and the radius is ', circle.radius);
+});
+
+pubsub.stick("selected", {radius: 10});
+
+pubsub.on("selected", has_radius, function (evt, circle){
+  console.log('This will be fired as well!');
+});
+
 Registries
 ==========
 This helper function is useful to group adapters in registries::
