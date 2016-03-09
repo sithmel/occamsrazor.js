@@ -413,17 +413,21 @@ If you need to handle the event only once there is a special function ".one"::
       console.log('This is executed only once');
     });
 
-In the way it works, you'll require to have event attached (with on) before triggering an event. You can also do the opposite. The "stick" method works like trigger but allows to keep the arguments published:
+In the way it works, you'll require to have event attached (with on) before triggering an event. You can also do the opposite. The "stick" method works like trigger but allows to keep the arguments published::
 
-pubsub.on("selected", has_radius, function (evt, circle){
-  console.log('Circle is selected and the radius is ', circle.radius);
-});
+    pubsub.on("selected", has_radius, function (evt, circle){
+      console.log('Circle is selected and the radius is ', circle.radius);
+    });
+    
+    pubsub.stick("selected", {radius: 10});
+    
+    pubsub.on("selected", has_radius, function (evt, circle){
+      console.log('This will be fired as well!');
+    });
 
-pubsub.stick("selected", {radius: 10});
-
-pubsub.on("selected", has_radius, function (evt, circle){
-  console.log('This will be fired as well!');
-});
+Context
+=======
+Some methods retain the current context (this). They are: all/trigger, stick, adapt. This allows you to call them as methods or using call/apply.
 
 Registries
 ==========
@@ -568,9 +572,13 @@ Syntax::
 
     adapters([arg1, arg2 ...]);
 
+It is equivalent to::
+
+    adapters.adapt([arg1, arg2 ...]);
+
 take 0 or more arguments. It calls the most specific function for the arguments.
 
-adapters.all
+adapters.all (alias .trigger)
 -------------------------------------------------------
 
 Syntax::
@@ -579,6 +587,17 @@ Syntax::
 
 take 0 or more arguments. It calls every function that match with the arguments.
 The results of the functions are returned inside an array.
+
+adapters.stick 
+-------------------------------------------------------
+
+Syntax::
+
+    adapters.stick([arg1, arg2 ...]);
+
+It acts like "all" but persist the arguments and the context (this) in the adapter registry.
+Then if anyone use add a new adapter (using add, on or one). It will try to adapt the persisted arguments and fire the result.
+In that case the result will be lost, so it is suitable for functions with a side effect (like event handlers).
 
 adapters.add (alias .on)
 ---------------------------------------------------
@@ -619,7 +638,8 @@ delete a function from the adapters. Syntax::
 
     adapters.remove(func);
 
-returns the adapters (this method can be chained)
+returns the adapters (this method can be chained).
+If you call it without arguments it will remove all the adapters in the registry.
 
 adapters.size
 -------------------------------------------------------
@@ -638,6 +658,22 @@ Syntax::
     adapters1.merge(adapters2, adapters3, ...);
 
 returns an adapter registry that merge all the adapters.
+
+adapters.proxy
+-------------------------------------------------------
+
+Syntax::
+
+    var proxy = adapters.proxy();
+
+returns a proxy. This is mostly equivalent to the original adapter registry (you can't call it like a function though, you can use the "adapt" method).
+Every adapter added through the proxy get marked and can get removed easily using remove (called on the proxy)::
+
+    adapters.add(...); // this won't be touched
+    proxy.add(...); // this will be removed
+    proxy.remove(...); // this will be removed
+
+Every method returning an adapter registry, returns a proxy instead.
 
 registry
 ------------------------------------

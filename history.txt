@@ -1,5 +1,11 @@
 Changelog
 
+4.6.0 (2016/03/09)
+==================
+
+- added proxy method
+- it is possible to remove all adapters in a registry with "remove"
+
 4.5.0 (2016/03/08)
 ==================
 

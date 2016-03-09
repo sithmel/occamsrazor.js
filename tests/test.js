@@ -341,7 +341,15 @@ test("apply this to an adapter", function() {
   });
 
   equal(hello.apply('world!'), 'hello world!', 'This works correctly!');
+});
 
+test("apply this to a proxy", function() {
+
+  var hello = occamsrazor().proxy().add(function (){
+    return "hello "  + this;
+  });
+
+  equal(hello.adapt.apply('world!'), 'hello world!', 'This works correctly!');
 });
 
 test("adapter as method", function() {
@@ -356,8 +364,6 @@ test("adapter as method", function() {
   var obj = new Factory;
 
   equal(obj.method(), 'hello world!', 'This works correctly!');
-
-
 });
 
 
@@ -619,4 +625,65 @@ test("important raise the score", function() {
   equal(hasNumberImportant({}), null, "match");
   equal(hasNumberImportant({number: 1}), 66, "match");
 
+});
+
+module( "remove", {
+  setup: function (){
+    this.adapter = occamsrazor();
+    this.f1 = function () {};
+    this.f2 = function () {};
+    this.adapter.on('test1', this.f1);
+    this.adapter.on('test2', this.f2);
+  }
+});
+
+test("removing everything", function() {
+  equal(this.adapter._functions().length, 2, '2 functions');
+  this.adapter.remove();
+  equal(this.adapter._functions().length, 0, 'No functions');
+});
+
+test("removing 1 function", function() {
+  equal(this.adapter._functions().length, 2, '2 functions');
+  this.adapter.remove(this.f1);
+  equal(this.adapter._functions().length, 1, '1 function');
+});
+
+module( "Proxy", {
+  setup: function (){
+    this.adapter = occamsrazor();
+    this.proxy = this.adapter.proxy();
+    this.f1 = function () {return 1;};
+    this.f2 = function () {return 2;};
+    this.adapter.add('test1', this.f1);
+    this.proxy.add('test1', this.f2);
+  }
+});
+
+test("add/remove to proxy", function() {
+  equal(this.adapter._functions().length, 2, '2 functions');
+  this.proxy.remove();
+  equal(this.adapter._functions().length, 1, '1 function');
+});
+
+test("add/remove to adapter", function() {
+  equal(this.adapter._functions().length, 2, '2 functions');
+  this.adapter.remove();
+  equal(this.adapter._functions().length, 0, '0 functions');
+});
+
+test("proxy should return", function() {
+  deepEqual(this.proxy.trigger('test1'), [2, 1], 'call right func');
+});
+
+test("adapter should return", function() {
+  deepEqual(this.adapter.trigger('test1'), [2, 1], 'call right func');
+});
+
+test("proxy should return proxy on chaining", function() {
+  var maybeadapter = this.adapter.add('test1', this.f1);
+  var maybeproxy = this.proxy.add('test1', this.f1);
+
+  equal(this.adapter, maybeadapter, 'call right func');
+  equal(this.proxy, maybeproxy, 'call right func');
 });
