@@ -73,127 +73,6 @@ There are two fundamentals problems with messing directly with objects:
 
 Using adapters promotes the open/close principle (https://en.wikipedia.org/wiki/Open/closed_principle). They are easy to test and they allow to add functionalities without changing already tested code base.
 
-More about validators
-=====================
-Ultimately a validator is a function. When it runs against an object, it returns a falsy value or a score.
-The falsy value means that an object doesn't fit in the validator's constraints.
-The score represent how well the object fits (its specificity). For example::
-
-    var isAnything = occamsrazor.validator();
-
-occamsrazor.validator() creates the simplest validator. It matches anything with score 1::
-
-    isAnything('hello'); // returns 1
-    isAnything({width: 10}); // returns 1
-
-You can chain a function to create a more strict validation::
-
-    var hasWheels = isAnything.match(function (obj){
-        return 'wheels' in obj;
-    });
-
-or::
-
-    var hasWheels = occamsrazor.validator().match(function (obj){
-        return 'wheels' in obj;
-    });
-
-So for example, the score of this new validator will be 2::
-
-    hasWheels({wheels: 4}); // returns 2
-    hasWheels({feet: 2});   // returns null
-
-You can go on having a more specific validator::
-
-    var hasWheelsAndWings = hasWheels.match(function (obj){
-        return 'wings' in obj;
-    });
-
-Every validator has a function "score" that returns its specificity::
-
-    isAnything.score()        // 1
-    hasWheels.score()         // 2
-    hasWheelsAndWings.score() // 3
-
-In order to write validators you can use duck typing, type checking or whatever check you want to use::
-
-    // duck typing
-    var has_wings = occamsrazor.validator().match(function (obj){
-        return 'wings' in obj;
-    });
-
-    //type checking
-    var is_a_car = occamsrazor.validator().match(function (obj){
-        return Car.prototype.isPrototypeOf(obj);
-    });
-
-    //other
-    var is_year = occamsrazor.validator().match(function (obj){
-        var re = /[0-9]{4}/;
-        return !!obj.match(re);
-    });
-
-The "match" method allows to define a validator using a terse syntax. You have already seen that it can take a function as argument.
-You can also pass a string or a regular expression for matching a string::
-
-    var is_hello = occamsrazor.validator().match('hello');
-    var contains_nuts = occamsrazor.validator().match(/nut/);
-
-    is_hello('hello');
-    contains_nuts('hazelnut');
-
-Or numbers::
-
-    var is_ten = occamsrazor.validator().match(10);
-    is_ten(10);
-
-It works for booleans and null in the same way.
-If you pass an array of strings it will match with an object containing all the attributes with those names::
-
-    var has_width_and_height = occamsrazor.validator().match(['width', 'height']);
-
-Finally you can perform deep property checking using an object and combining the previous checks::
-
-    // match with width and height equal to 10
-    var has_width_and_height_10 = occamsrazor.validator().match({width: 10, height: 10});
-
-    // match with a center attribute with x and y subattributes
-    var has_center = occamsrazor.validator().match({center: ['x', 'y']});
-
-    // match if obj.recipe.ingredients is a string and match with /nuts/
-    var recipe_has_nuts = occamsrazor.validator().match({recipe: {ingredients: /nuts/}});
-
-    // match if obj.weight is a number bigger than 100
-    var is_heavy = occamsrazor.validator().match({weight: function (obj){return obj > 100}});
-
-.match is so flexible that it is used by default in any place you can pass a validator::
-
-    var shapeMath = occamsrazor()
-        .add(['radius'], circleMath)
-        .add(['width'], squareMath);
-
-This is perfectly fine for a simple case (all validators have a specificity of 2).
-There are other 2 helpers available for checking against the prototype or the constructor function::
-
-    var is_prototype_rect = occamsrazor.validator().isPrototypeOf(rect.prototype);
-    var is_instance_rect = occamsrazor.validator().isInstanceOf(Rect);
-
-If you need a custom validator you can extend the object occamsrazor.shortcut_validators::
-
-    occamsrazor.shortcut_validators.isSquare = function (){
-        return function (obj){
-            return 'width' in obj && 'height' in obj && obj.width === obj.height;
-        };
-    };
-
-Of course you can combine all the methods we have seen so far::
-
-    // this will have a specificity of 4
-    var is_instance_a_square = occamsrazor.validator()
-        .isInstanceOf(Rect)
-        .match(['width', 'height'])
-        .isSquare();
-
 Adding a more specific adapter
 ==============================
 Validators with different scores allow to choose different adapters.
@@ -418,9 +297,9 @@ In the way it works, you'll require to have event attached (with on) before trig
     pubsub.on("selected", has_radius, function (evt, circle){
       console.log('Circle is selected and the radius is ', circle.radius);
     });
-    
+
     pubsub.stick("selected", {radius: 10});
-    
+
     pubsub.on("selected", has_radius, function (evt, circle){
       console.log('This will be fired as well!');
     });
@@ -458,98 +337,6 @@ You can also use it in node.js::
 
     var occamsrazor = require('occamsrazor');
 
-Validator function
-------------------
-
-Syntax::
-
-    occamsrazor.validator();
-
-Returns a generic validator. It will validate every object with score 1.
-
-occamsrazor.validator().score
------------------------------
-
-Syntax::
-
-    a_validator.score();
-
-Returns the score returned by this validator. It can be useful for debugging or introspection.
-
-occamsrazor.validator().important
----------------------------------
-
-Syntax::
-
-    a_validator.important([n]);
-
-It bumps the score by n (default to 64).
-
-occamsrazor.validator().match
------------------------------
-
-Add a check to the validator, it uses a special syntax (used by default by .add, .one).
-
-Syntax::
-
-    // execute a function against the value: returns true or false
-    var validator = occamsrazor.validator().match(function);
-
-    // matches if value is equal to string
-    var validator = occamsrazor.validator().match(string);
-
-    // matches if value is equal to null
-    var validator = occamsrazor.validator().match(null);
-
-    // matches if value is equal to the boolean
-    var validator = occamsrazor.validator().match(boolean);
-
-    // matches if value matches with the regular expression
-    var validator = occamsrazor.validator().match(regular_expression);
-
-    // matches if these properties are defined in the object
-    var validator = occamsrazor.validator().match([array of property names]);
-
-    // deep matching
-    var validator = occamsrazor.validator().match({propName1: "string", propName2: {propName3: "string"}});
-
-This last form allows to perform the validation check recursively, walking the properties of the object.
-In a property is undefined the value will match any value.
-
-For example::
-
-    var hasCenterX = occamsrazor.validator().match({center: {x: undefined}});
-    // will match {center: {x: "10"}}
-
-    var hasCenterX10 = occamsrazor.validator().match({center: {x: "10"}});
-    // will match {center: {x: "10"}} but not {center: {x: "11"}}
-
-    var hasCenter5or10 = occamsrazor.validator().match({center: {x : function (c){
-      return c === "5" || c === "10";
-    }}});
-    // will match {center: {x: "5"}} or {center: {x: "10"}}
-
-
-occamsrazor.validator().isPrototypeOf
--------------------------------------
-Check if an object is a prototype of another.
-
-Syntax::
-
-    var validator = occamsrazor.validator().isPrototypeOf(obj);
-
-occamsrazor.validator().instanceOf
--------------------------------------
-Check if an object is an instance of a constructor.
-
-Syntax::
-
-    var validator = occamsrazor.validator().instanceOf(ContructorFunc);
-
-occamsrazor.shortcut_validators
--------------------------------
-It is an object where you can add your shortcut validators.
-"match" and "isPrototypeOf" are added here but you can add your own if you need.
 
 occamsrazor.adapters
 --------------------
@@ -588,7 +375,7 @@ Syntax::
 take 0 or more arguments. It calls every function that match with the arguments.
 The results of the functions are returned inside an array.
 
-adapters.stick 
+adapters.stick
 -------------------------------------------------------
 
 Syntax::
