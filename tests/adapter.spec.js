@@ -113,8 +113,8 @@ describe('general', function () {
     assert.equal(print_test() , 'test');
   });
 
-  it('must convert null to isAnything', function () {
-    var works = occamsrazor().add(null, function (x) {
+  it('must convert undefined to isAnything', function () {
+    var works = occamsrazor().add(undefined, function (x) {
       return x;
     });
     assert.equal(works('anything'), 'anything');
@@ -149,7 +149,7 @@ describe('general', function () {
       square = function (a) {return a*a;};
 
       getSquare = occamsrazor()
-      .notFound(notFound);
+      .add(notFound);
     });
 
     it('must return the only adapter available', function () {

@@ -1,5 +1,7 @@
 Occamsrazor
 ===========
+[![Build Status](https://travis-ci.org/sithmel/occamsrazor.js.svg?branch=master)](https://travis-ci.org/sithmel/occamsrazor.js)
+
 Occamsrazor helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
 It implements a system to discovery the most suitable adapter for one or more objects.
 

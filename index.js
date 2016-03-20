@@ -1,50 +1,6 @@
 require('setimmediate');
 var validator = require('occamsrazor-validator');
-
-var wrapConstructor = function (Constructor){
-  function closure(){
-    var newobj, out,
-    New = function (){};
-    New.prototype = Constructor.prototype;
-    newobj = new New;
-    newobj.constructor = Constructor;
-    out = Constructor.apply(newobj, Array.prototype.slice.call(arguments));
-    if (out === undefined){
-      return newobj;
-    }
-    return out
-  }
-  return closure;
-};
-
-//convert an array in form [1,2,3] into a string "ABC" (easily sortable)
-var score_array_to_str = function (score) {
-  var i, s = ""; //output string
-  for (i = 0; i < score.length; i++) {
-    s += String.fromCharCode(64 + score[i]);
-  }
-  return s;
-};
-
-//given a list of arguments returns a function that compute a score
-//from a list of validators
-var compute_score = function (args) {
-  var closure = function (validators) {
-    var i, l, current_score, score = [];
-    if (args.length < validators.length) {
-      return null;
-    }
-    for (i = 0, l = validators.length; i < l; i++) {
-      current_score = validators[i](args[i]);
-      if (!current_score) {
-        return null;
-      }
-      score.push(current_score);
-    }
-    return score;
-  };
-  return closure;
-};
+var wrapConstructor = require('./lib/wrap-constructor');
 
 //add a function: func must be a function.
 //validators is an array of validators
@@ -52,17 +8,19 @@ var compute_score = function (args) {
 var _add = function (functions, validators, func, times, ns) {
   var i;
   for (i = 0; i < validators.length; i++){
-    if (validators[i] === null){
+    if (typeof validators[i] === undefined){
       validators[i] = validator();
     }
-    else if (validators[i].toString() !== 'validator'){ // TODO: bug!!!!
-      validators[i] = validator().match(validators[i]);
+    else {
+      if (!(typeof validators[i] === 'function' && 'score' in validators[i])) {
+        validators[i] = validator().match(validators[i]);
+      }
     }
   }
 
   functions.push({
     func: func,
-    validators: validators,
+    validators: validator.combine.apply(undefined, validators),
     times: times,
     ns: ns
   });
@@ -98,38 +56,30 @@ var _remove = function (functions, func, ns) {
 //get all the functions that validates with args. Sorted by score
 //functions is a list of obj (func, validators)
 var filter_and_sort = function (args, functions, throwOnDuplicated) {
-  var i, n, getScore, score, decorated_components = [],
-  validators, funcs = [];
+  var i, result, results = [];
 
   if (!functions.length) {
     return [];
   }
   //get the score function
-  getScore = compute_score(args);
   //decorate
   for (i = 0; i < functions.length; i++) {
-    validators = functions[i].validators;
-    score = getScore(validators);
+    result = functions[i].validators.apply(undefined, args);
     //filter
-    if (score) {
-      // This hack leverages the lexicografy sorting order to sort
-      // the components by their scores
-      decorated_components.push([score_array_to_str(score), functions[i]]);
+    if (result) {
+      result.payload = functions[i];
+      results.push(result);
     }
   }
   //sort
-  decorated_components.sort().reverse();
+  results.sort().reverse();
 
-  if (throwOnDuplicated && decorated_components.length > 1 && decorated_components[0][0] === decorated_components[1][0]){
+  if (throwOnDuplicated && results.length > 1 && results[0].toString() === results[1].toString()){
     throw new Error("Occamsrazor (get): More than one adapter fits");
   }
 
   //undecorate
-  for (n = 0; n < decorated_components.length; n++) {
-    funcs.push(decorated_components[n][1]);
-  }
-  return funcs;
-
+  return results.map(function (r) {return r.payload;});
 };
 
 // manage countdown (really only using 1 for now)
@@ -171,54 +121,40 @@ var getAll = function (args, functions, context) {
 //main function
 var _occamsrazor = function (adapterFuncs, stickyArgs) {
   var functions = adapterFuncs || [],
-      stickyArguments = stickyArgs || [],
-  occamsrazor = function () {
+      stickyArguments = stickyArgs || [];
+
+  var occamsrazor = function () {
     return getOne(Array.prototype.slice.call(arguments), functions, this);
+  };
+
+  var getAdd = function (times) {
+    return function () {
+      var ns = this.ns;
+      var func = arguments[arguments.length - 1];
+      var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
+      if (typeof func !== 'function') {
+        throw new Error("Occamsrazor (add): The last argument MUST be a function");
+      }
+
+      var funcLength = _add(functions, validators, func, times, ns);
+
+      for (var i = 0; i < stickyArguments.length; i++) {
+        setImmediate(function (_stickyArgs, _funcs) {
+          return function () {
+            getAll(_stickyArgs.args, _funcs, _stickyArgs.context);
+          }
+        }(stickyArguments[i], [functions[funcLength - 1]]));
+      }
+      return ns ? this : occamsrazor;
+    };
   };
 
   occamsrazor.adapt = function adapt() {
     return getOne(Array.prototype.slice.call(arguments), functions, this);
   };
 
-  occamsrazor.on = occamsrazor.add = function add() { // TODO repetitive code here!
-    var ns = this.ns;
-    var func = arguments[arguments.length - 1];
-    var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
-    if (typeof func !== 'function') {
-      throw new Error("Occamsrazor (add): The last argument MUST be a function");
-    }
-
-    var funcLength = _add(functions, validators, func, undefined, ns);
-
-    for (var i = 0; i < stickyArguments.length; i++) {
-      setImmediate(function (_stickyArgs, _funcs) {
-        return function () {
-          getAll(_stickyArgs.args, _funcs, _stickyArgs.context);
-        }
-      }(stickyArguments[i], [functions[funcLength - 1]]));
-    }
-    return ns ? this : occamsrazor;
-  };
-
-  occamsrazor.one =  function one() {
-    var ns = this.ns;
-    var func = arguments[arguments.length - 1];
-    var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
-    if (typeof func !== 'function') {
-      throw new Error("Occamsrazor (add): The last argument MUST be a function");
-    }
-
-    var funcLength = _add(functions, validators, func, 1, ns);
-
-    for (var i = 0; i < stickyArguments.length; i++) {
-      setImmediate(function (_stickyArgs, _funcs) {
-        return function () {
-          getAll(_stickyArgs.args, _funcs, _stickyArgs.context);
-        }
-      }(stickyArguments[i], [functions[funcLength - 1]]));
-    }
-    return ns ? this : occamsrazor;
-  };
+  occamsrazor.on = occamsrazor.add = getAdd();
+  occamsrazor.one =  getAdd(1);
 
   occamsrazor.size = function size() {
     return functions.length;
@@ -259,16 +195,6 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
     setImmediate(function () {
       getAll(args, functions, this);
     });
-  };
-
-  occamsrazor.notFound = function notFound(func) {
-    var ns = this.ns;
-    if (typeof func !== 'function') {
-      throw new Error("Occamsrazor (notFound): you should pass a function");
-    }
-
-    _add(functions, [], func, undefined, ns);
-    return ns ? this : occamsrazor;
   };
 
   occamsrazor.proxy = function proxy(id) {
