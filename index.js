@@ -165,11 +165,20 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
       return adapter._functions();
     });
     var adapterFuncs = Array.prototype.concat.apply(functions, unFlattenAdapterFuncs)
-    return _occamsrazor(adapterFuncs);
+
+    var unFlattenStickyArguments = Array.prototype.map.call(arguments, function (adapter){
+      return adapter._stickyArguments();
+    });
+    var stickyArguments = Array.prototype.concat.apply(functions, unFlattenStickyArguments)
+    return _occamsrazor(adapterFuncs, stickyArguments);
   };
 
   occamsrazor._functions = function _functions() {
     return functions;
+  };
+
+  occamsrazor._stickyArguments = function _stickyArguments() {
+    return stickyArguments;
   };
 
   occamsrazor.remove = occamsrazor.off = function remove(func) {
