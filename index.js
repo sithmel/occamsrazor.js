@@ -206,7 +206,7 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
     });
   };
 
-  occamsrazor.proxy = function proxy(id) {
+  occamsrazor.proxy = occamsrazor.namespace = function proxy(id) {
     id = id || Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
     function Proxy(id) {
         this.ns = id;

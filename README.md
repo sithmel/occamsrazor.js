@@ -2,480 +2,440 @@ Occamsrazor
 ===========
 [![Build Status](https://travis-ci.org/sithmel/occamsrazor.js.svg?branch=master)](https://travis-ci.org/sithmel/occamsrazor.js)
 
-Occamsrazor helps you to use the adapter design pattern (http://en.wikipedia.org/wiki/Adapter_pattern)
-It implements a system to discovery the most suitable adapter for one or more objects.
-
-Its goal is to keep the code simple to extend and test.
+Occamsrazor finds the function (or the functions) that matches a list of arguments. It can be be used to write event systems, or to make an application extensible.
 
 Tutorial
 ========
-Let's say you have some objects::
+Let's say you have some objects:
+```js
+var shape1 = {radius: 10};
+var shape2 = {radius: 5};
+var shape3 = {width: 5};
+```
+Every object represents a different shape. You need to calculate the area of these objects.
+```js
+var circleArea = function (circle){
+  return circle.radius * circle.radius * Math.PI;
+};
 
-    var shape1 = {radius: 10};
-    var shape2 = {radius: 5};
-    var shape3 = {width: 5};
-
-Every object represents a different shape. You need to calculate some properties of these objects. For example areas and perimeters.
-Because every type of shape needs different calculations, you create an adapter for every type of object::
-
-    var circleMath = function (circle){
-        return {
-            area: function (){return circle.radius*circle.radius*Math.PI;},
-            perimeter: function (){return 2*circle.radius*Math.PI;}
-        };
-    };
-
-    var squareMath = function (square){
-        return {
-            area: function (){return square.width*square.width;},
-            perimeter: function (){return 4*square.width;}
-        };
-    };
-
-The problem is: how can you pick the right adapter for each shape ?
+var squareArea = function (square){
+  return square.width * square.width;
+};
+```
+The problem is: how can you pick the right function for each shape ?
 
 This is where occamsrazor enter.
-First of all you need some validator. A validator will help to identify what "shape" of the object::
-
-    var has_radius = occamsrazor.validator().match(['radius']);
-    var has_width  = occamsrazor.validator().match(['width']);
-
-Don't worry about the syntax for now. It is explained below.
-These two, match for objects with a "radius" or "width" attribute respectively.
-Now create a special function that wraps the adapters (you could call it an adapter registry)::
-
-    var shapeMath = occamsrazor.adapters();
-
-Then add two adapters to our adapter registry::
-
-    shapeMath.add(has_radius, circleMath);
-    shapeMath.add(has_width, squareMath);
-
-The first adapter will work for circles and the second for squares. The validators (has_radius and has_width) are used internally to pick the right adapter.
-If you prefer you can chain the add methods together and/or use "occamsrazor" instead of "occamsrazor.adapters" (it's just a shorter alias)::
-
-    var shapeMath = occamsrazor()
-        .add(has_radius, circleMath)
-        .add(has_width, squareMath);
-
-From now on if you need an adapter for your objects you can do::
-
-    var adapter = shapeMath(shape1);
-    adapter.perimeter();
-
-Conceptually an adapter is a function returning an object but nothing prevents you to write a function that returns a primitive type or nothing at all.
-
-Why use adapters
-================
-Maybe you are thinking why using an adapter when I can just extend an object using its prototype or copying attributes and methods.
-There are two fundamentals problems with messing directly with objects:
-
-- the method name we choose can conflicts with another one. Generally speaking patches can easily become incompatible between each others
-- it's difficult to test an extension in isolation
-
-Using adapters promotes the open/close principle (https://en.wikipedia.org/wiki/Open/closed_principle). They are easy to test and they allow to add functionalities without changing already tested code base.
-
-Adding a more specific adapter
-==============================
-Validators with different scores allow to choose different adapters.
-Now add another type of shape, a rectangle::
-
-    var shape4 = {width: 5, height: 6};
-
-A rectangle has both width and height so you will define a more specific validator::
-
-    var has_width_and_height = occamsrazor.validator().match(['width']).match(['height']); // score 3
-
-You have already seen that any time you extend a validator, you get a new one so you could extend the previous one::
-
-    var has_width_and_height = has_width.match(['height']); // score 3
-
-Look out! this is different from defining a validator like this::
-
-    var wrong_has_width_and_height = occamsrazor.validator().match(['width', 'height']); // score 2
-
-The last one has the same specificity of has_width so occamsrazor won't be able to decide what adapter to use!
-
-The score of this validator gets bigger every time is chained with another one::
-
-    var is_parallelepiped = has_width_and_height.match(['depth']);
-
-shape4 is both a rectangle and a square but the has_width_and_height validator is more specific.
-Using this validator you can add another adapter::
-
-    var rectangleMath = function (rectangle){
-        return {
-            area: function (){return rectangle.width*rectangle.height;},
-            perimeter: function (){return 2*rectangle.width + 2*rectangle.height;}
-        };
-    };
-
-    shapeMath.add(has_width_and_height, rectangleMath);
-
-When you call the adapter registry it will returns the most specific adapter (based on the validator with the highest score)::
-
-    var adapter = shapeMath(shape4); // rectangleMath(shape4)
-    adapter.perimeter();
-
-If the arguments (shape4 in the precious example) matches with more than one adapter with the same score, it will throw an exception.
-
-Default adapter
-===============
-
-If you call an adapter and there is no match with the registered functions you get an exception::
-
-    shapeMath(not_a_shape); // it throws: new Error("Function not found")
-
-It might happen that you need a generic adapter to be called, when no other adapter fit. You can register a default using notFound::
-
-    shapeMath.notFound(function (){return;})
-    shapeMath(not_a_shape); // returns undefined
-
-Deleting an adapter
-===================
-
-If you want to delete an adapter you can use the "remove" method::
-
-    shapeMath.remove(rectangleMath);
-
-The remove method is chainable::
-
-    shapeMath.remove(rectangleMath).remove(squareMath);
-
-Multiadapters
-=============
-In the previous example you saw adapters that adapt a single object. We can also build multiadapters: adapters that adapt more than one object.
-
-Let's make an example. I am writing a drawing application. This application draw different shapes in different context using either canvas, svg or DOM manipulation.
-Each of these context has a different API and I am forced to write a different drawing subroutine. To manage the code easily I could use some multiadapters::
-
-    var shapeDraw = occamsrazor.adapters();
-
-    // draw a circle on canvas
-    shapeDraw.add(has_radius, is_canvas, function (circle, canvasContext){
-        ...
-    });
-
-    // draw a square on canvas
-    shapeDraw.add(has_width, is_canvas, function (square, canvasContext){
-        ...
-    });
-
-    // draw a circle on svg
-    shapeDraw.add(has_radius, is_svg, function (circle, svgContext){
-        ...
-    });
-
-    // draw a square on svg
-    shapeDraw.add(has_width, is_svg, function (square, svgContext){
-        ...
-    });
-
-    // draw a circle using DIVs
-    shapeDraw.add(has_radius, is_dom, function (circle, domContext){
-        ...
-    });
-
-    // draw a square using DIVs
-    shapeDraw.add(has_width, is_dom, function (square, domContext){
-        ...
-    });
-
-From now, if I want to draw something on any context I will use::
-
-    var shape = {radius: 10},
-        context = document.getElementByID('#drawing_space');
-
-    painter = shapeDraw(shape, context);
-    painter.draw();
-
-The adapters machinery will do the rest executing the adapter with the highest score.
-
-The score of multiadapters is calculated sorting the score of each validator in lexicographical order http://en.wikipedia.org/wiki/Lexicographical_order (like a dictionary).
-
-Passing parameters to the adapter
-=================================
-
-You should notice from the previous examples that adapters take as arguments the variables that pass the validation::
-
-    shapeDraw.add(has_radius, is_canvas, function (circle, canvasContext){
-    ...
-    painter = shapeDraw(shape, context);
-
-In this case a "circle" object and a "canvasContext" object. You can also call the adapter with some extra arguments::
-
-    shapeDraw.add(has_radius, is_canvas, function (circle, canvasContext, strokecolor, fillcolor ){
-    ...
-    painter = shapeDraw(shape, context, 'red', 'black');
-
-These extra arguments are not considered for the purpose of selecting the adapter.
-
-Adding constructor functions to an adapter
-==========================================
-
-Occamsrazor works with constructor functions too ! you just need to wrap the constructor function inside a special wrapper::
-
-    Shape = occamsrazor
-        .add(has_width, occamsrazor.wrapConstructor(function (obj){
-            this.width = obj.width;
-            this.area = this.width * this.width;
-        }))
-        .add(has_radius, occamsrazor.wrapConstructor(function (obj){
-            this.radius = obj.radius;
-            this.area = 2 * this.radius * Math.PI;
-        }));
-
-    var shape = new Shape({width: 5});
-
+First of all you need some validator. A validator will help to identify a "shape":
+```js
+var validator = require('occamsrazor-validator');
+var has_radius = validator().has('radius');
+var has_width  = validator().has('width');
+```
+A validator is a function that runs over an argument and returns a positive score if the argument matches, or null if it doesn't. You can find further explanations [here](https://github.com/sithmel/occamsrazor-validator)
+Don't worry about the details for now. There is some other example below.
+
+These two validators, match objects with a "radius" or "width" attribute respectively.
+Now I create a special function that wraps the two area functions defined previously. I call it "function registry":
+```js
+var shapeArea = occamsrazor();
+```
+Then add the two functions to it:
+```js
+shapeArea.add(has_radius, circleArea);
+shapeArea.add(has_width, squareArea);
+```
+The validators (has_radius and has_width) are used internally to pick the right function.
+If you prefer you can chain the "add" methods together:
+```js
+var shapeArea = occamsrazor()
+  .add(has_radius, circleArea)
+  .add(has_width, squareArea);
+```
+From now on if you need to calculate the area you will do:
+```js
+var area = shapeArea(shape1);
+```
+Maybe you are thinking, why doing this while you can just extend an object using its prototype or copying attributes and methods.
+Well, you just can't change a third party script, for example. You may also want to provide a way to extend your code without changing it.
+
+Working in this way promotes the open/close principle (https://en.wikipedia.org/wiki/Open/closed_principle) because you can add functionalities without changing the original code.
+
+Adding a more specific function
+===============================
+Validators with different scores allow to choose different functions.
+Now I add another type of shape, a rectangle:
+```js
+var shape4 = {width: 5, height: 6};
+```
+A rectangle has both width and height so you will define a more specific validator:
+```js
+var has_width_and_height = validator() // this scores 1
+  .has('width')                        // this scores 2
+  .has('height');                      // this scores 3
+```
+Every time you extend a validator, you get a new one so you could instead extend the previous one:
+```js
+var has_width_and_height = has_width.has('height'); // score 3
+```
+But pay attention! this is different from defining a validator like this:
+```js
+var wrong_has_width_and_height = validator().has('width', 'height'); // score 2
+```
+The last one has the same specificity of has_width so occamsrazor won't be able to decide what function to use!
+
+The score of this validator gets bigger every time is chained with another one:
+```js
+var is_parallelepiped = has_width_and_height.has('depth');
+```
+shape4 fits the description of a rectangle and a square (they both has a width) but the has_width_and_height validator is more specific.
+Using this validator you can add another function:
+```js
+var rectangleArea = function (rectangle){
+  return rectangle.width * rectangle.height;
+};
+
+shapeArea.add(has_width_and_height, rectangleArea);
+```
+When you call the registry it will execute the most specific function (based on the validator with the highest score):
+```js
+var area = shapeArea(shape4); // rectangleMath(shape4)
+```
+If the arguments (shape4 in the previous example) matches with more than one function with the same score, it will throw an exception.
+
+Matching more than one argument
+===============================
+In the previous example you used a validator to match an argument, in reality you can match any number of arguments.
+This one doesn't try to match any argument.
+```js
+shapeArea.add(function (shape) {
+  return 'I can\'t calculate the area';
+});
+```
+This one matches two:
+```js
+shapeArea.add(has_width, has_width, function (shape1, shape2) {
+  // combining the areas of two squares
+  return shape1.width * shape1.width + shape2.width * shape2.width;
+});
+```
+You might wonder how the system decide to match a function or another. Well, all the respective scores are put in an array and compared. For example:
+```js
+[] // this has the lowest score, it doesn't match any argument
+[1] > []
+[2] > [1]
+[1, 1] > [1]
+[1, 1] > [1, 0]
+[2, 1] > [1, 9, 9, 9]
+```
+In the "add" method you specify the arguments you want to match but you are not forced to validate all arguments passed to the function.
+```js
+shapeArea.add(has_width_and_height, function (shape, name) {
+  // shape argument is validated (it must have a width and an height)
+  // name is not validated
+  console.log(name + ' is a rectangle');
+});
+```
+
+Deleting an function
+====================
+If you want to delete a function you can use the "remove" method:
+```js
+shapeArea.remove(rectangleArea);
+```
+The remove method is chainable:
+```js
+shapeArea.remove(rectangleArea).remove(squareArea);
+```
+You can also remove all functions with:
+```js
+shapeArea.remove();
+```
+
+Adding constructor functions
+============================
+Occamsrazor works with constructor functions too! you just need to wrap the constructor function inside a special wrapper:
+
+```js
+var Shape = occamsrazor
+  .add(has_width, occamsrazor.wrapConstructor(function (obj){
+      this.width = obj.width;
+  }))
+  .add(has_radius, occamsrazor.wrapConstructor(function (obj){
+      this.radius = obj.radius;
+  }));
+
+var shape = new Shape({width: 5});
+```
 The prototype chain and "constructor" attribute will work as expected.
-A little side effect is that the constructor could be called as a function::
 
-    var shape = Shape({width: 5});
-
-
-Getting all the adapters
-========================
-Sometimes you need to get back all the matching adapters, not just the more specific::
-Imagine we need to build a sort of menu of shapes available on canvas::
-
-    var shapeAdder = occamsrazor.adapters();
-
-    var shapeAdder.add(is_canvas, function (canvas){
-        return {
-            name: 'rectangle',
-            add: function (){
-                return {width: 5, height: 6};
-            }
-        }
+Shortcut validators
+===================
+Validators can be expressed in a shorter way as documented [here](https://github.com/sithmel/occamsrazor-validator#validatormatch)
+```js
+var shapeArea = occamsrazor()
+  .add({radius: undefined}, circleArea)
+  .add({width: undefined}, squareArea);
+```
+The shortcuts provide a way to match complex object with a very simple syntax. They have a fixed score:
+```js
+var registry = occamsrazor()
+  .add('select', {center: {x: undefined, y: undefined }}, 
+    function (command, point) {
+      // does something with the point
     });
+  
+registry('point', {center: {x: 3, y: 2}}); // this matches!
+```
+That is the equivalent of the less concise:
+```js
+var validator = require('occamsrazor-validator');
+var is_select = validator().match('select');
+var is_point = validator().match({center: {x: undefined, y: undefined }});
 
-    var shapeAdder.add(is_canvas, function (canvas){
-        return {
-            name: 'circle',
-            add: function (){
-                return {radius: 5};
-            }
-        }
+var registry = occamsrazor()
+  .add(is_select, is_point, 
+    function (command, point) {
+      // does something with the point
     });
+  
+registry('point', {center: {x: 3, y: 2}}); // this matches!
+```
 
-    var shapeAdder.add(is_canvas, function (canvas){
-        return {
-            name: 'circle',
-            add: function (){
-                return {width: 5};
-            }
-        }
-    });
 
-    var canvas_shapes = shapeAdder.all(canvas);
+Getting all
+===========
+So far you have used occamsrazor to get the most specific function (the one with the highest specificity score). You can also get all functions matching the validators, no matter what the score is:
+```js
+var shapeCalculations = occamsrazor()
+  .add(has_width, function (shape) {
+    return 'Perimeter is ' + (shape.width * 4);
+  })
+  .add(has_width, function (shape) {
+    return 'Area is ' + (shape.width * shape.width);
+  })
+  .add(has_radius, function (shape) {
+    return 'Perimeter is ' + (2 * Math.PI * shape.radius);
+  })
+  .add(has_radius, function (shape) {
+    return 'Area is ' + (Math.PI * shape.radius * shape.radius);
+  });
 
-This will return an array containing all the adapters representing the shapes that can be painted to a canvas.
+var results = shapeCalculations.all({width: 10});
 
-Implementing a Mediator with occamsrazor
-========================================
-The feature above allows to build a "Mediator" object that implements publish/subscribe.
-This is very useful to manage events in a centralized fashion.
-Other information about the mediator design pattern are here: http://en.wikipedia.org/wiki/Mediator_pattern.
-To make the syntax more intuitive "add" and "all" have the aliases "on" and "trigger"::
+// ['Perimeter is 40', 'Area is 100']
+```
+This will return an array containing all the results.
 
-    pubsub.on("selected", has_radius, function (evt, circle){
-      console.log('Circle is selected and the radius is ', circle.radius);
-    });
+Using occamsrazor as a publish/subscribe object
+===============================================
+Using its matching capabilities and the expressiveness of the shortcut syntax, you can use occamsrazor as an event system:
+```js
+var pubsub = occamsrazor();
+pubsub.on('selected', has_radius, function(eventName, shape) {
+  // do something with the shape
+});
+pubsub.trigger('selected', {radius: 10});
+```
+".on" attaches an event handler and ".trigger" runs all the event handlers matching its arguments.
+In reality ".on" is an alias of ".add" and ".trigger" is a slightly modified version of .all (it doesn't return the result of the functions and it defers the execution using setImmediate).
+Of course you can remove the event handler using ".off" (an alias of remove).
+If you need to handle the event only once there is a special method ".one":
+```js
+pubsub.one("selected", has_radius, function (evt, circle){
+  console.log('This is executed only once');
+});
+```
+Usually you'll need to have an event attached (with on) BEFORE triggering it. Some events represent a state change and it is very convenient keeping them published (imagine something like the "ready" jQuery event for example).
+You can publish an event permanently using "stick". This method works like trigger but allows to keep the arguments published, so any new event handler fires immediately:
+```js
+pubsub.on("selected", has_radius, function (evt, circle){
+  console.log('Circle is selected and the radius is ', circle.radius);
+});
 
-    pubsub.trigger("selected", {radius: 10});
+pubsub.stick("selected", {radius: 10});
 
-Of course you can remove the event using ".off" (an alias of remove), you have to pass to it the same function, though::
+pubsub.on("selected", has_radius, function (evt, circle){
+  console.log('This will be fired as well!');
+});
+```
 
-    pubsub.off("selected", has_radius, func);
+Namespace
+=========
+If you need to remove functions you added, without affecting others, you can create a new namespace:
+```js
+var namespace = pubsub.namespace();
+namespace.on('selected', has_radius, function () {
+  console.log('I have added a function using a namespace');
+});
 
-If you need to handle the event only once there is a special function ".one"::
+// the following are exactly the same
+pubsub.trigger('selected', {radius: 10});
+namespace.trigger('selected', {radius: 10});
 
-    pubsub.one("selected", has_radius, function (evt, circle){
-      console.log('This is executed only once');
-    });
-
-In the way it works, you'll require to have event attached (with on) before triggering an event. You can also do the opposite. The "stick" method works like trigger but allows to keep the arguments published::
-
-    pubsub.on("selected", has_radius, function (evt, circle){
-      console.log('Circle is selected and the radius is ', circle.radius);
-    });
-
-    pubsub.stick("selected", {radius: 10});
-
-    pubsub.on("selected", has_radius, function (evt, circle){
-      console.log('This will be fired as well!');
-    });
+namespace.remove(); // this removes only the function above
+pubsub.remove();    // this removes all functions
+```
 
 Context
 =======
-Some methods retain the current context (this). They are: all/trigger, stick, adapt. This allows you to call them as methods or using call/apply.
+Some methods retain the current context (this). They are: all/trigger, stick, adapt (that is a version of the object invoked without any method). This allows you to call them as methods or using call/apply.
 
 Registries
 ==========
-This helper function is useful to group adapters in registries::
-
-    var mathregistry = occamsrazor.registry('math'),
-        getArea = mathregistry('area_functions');
-
+This helper function is useful to group functions in registries:
+```js
+var mathregistry = occamsrazor.registry('math'),
+    getArea = mathregistry('area_functions');
+```
 If a registry doesn't exist it is created and returned by the registry function.
-If the adapter required doesn't exist it is created and returned too.
-If you don't specify a specific registry you'll get the "default" registry::
-
-    var registry = occamsrazor.registry();
-        getArea = registry('area_functions');
-
+If the function registry required doesn't exist it is created and returned too.
+If you don't specify a specific registry you'll get the "default" registry:
+```js
+var registry = occamsrazor.registry(),
+    getArea = registry('area_functions');
+```
 
 Syntax and reference
 ====================
 
 Importing occamsrazor
 ---------------------
-Occamsrazor can be imported in a traditional way::
+Occamsrazor is a commonjs module
+```js
+var occamsrazor = require('occamsrazor');
+```
 
-    <script src="occamsrazor.js"></script>
+Getting a function registry
+---------------------------
+Syntax:
+```js
+var funcs = occamsrazor.adapters();
+```
+or:
+```js
+var funcs = occamsrazor();
+```
 
-or using AMD (require.js).
-You can also use it in node.js::
+Function registry API
+=====================
+Syntax:
+```js
+funcs([arg1, arg2 ...]);
+```
+It is equivalent to:
+```js
+funcs.adapt([arg1, arg2 ...]);
+```
 
-    var occamsrazor = require('occamsrazor');
+it takes 0 or more arguments. It calls the most specific function with the given arguments and returns its result.
+It retains the context (this). If more than one function matches with the same score it throws an exception. 
 
+.all
+----
+```js
+funcs.all([arg1, arg2 ...]);
+```
+it takes 0 or more arguments. It calls all functions that matches, with the given arguments.
+It retains the context (this). It returns the results of all functions in an array.
 
-occamsrazor.adapters
---------------------
+.trigger
+--------
+```js
+funcs.trigger([arg1, arg2 ...]);
+```
+it takes 0 or more arguments. It calls all functions that matches, with the given arguments.
+It retains the context (this). It doesn't return the results as it's execution is deferred (using setImmediate). 
 
-returns an adapter registry.
+.stick
+------
+```js
+funcs.stick([arg1, arg2 ...]);
+```
+It works the same as trigger, the arguments (including the current context "this") are stored forever. When an new function is added (using "add", "on" or "one"), it is executed immediatly (if it matches).
 
-Syntax::
+.add (alias .on)
+----------------
+Syntax:
+```js
+funcs.add(func);
 
-    var adapters = occamsrazor.adapters();
+funcs.add(validator, func);
 
-or::
+funcs.add(validator, validator, validator ..., func);
+```
+Add a function and 0 or more validators to the function registry. The function is always the last argument.
 
-    var adapters = occamsrazor();
+It returns the function registry, or the namespaced function registry (this method can be chained). The validator will be converted automatically to a function using [validator.match]((https://github.com/sithmel/occamsrazor-validator#validatormatch))
 
-Adapters
-========
-A function/object returned from occamsrazor.adapter
-
-Syntax::
-
-    adapters([arg1, arg2 ...]);
-
-It is equivalent to::
-
-    adapters.adapt([arg1, arg2 ...]);
-
-take 0 or more arguments. It calls the most specific function for the arguments.
-
-adapters.all (alias .trigger)
--------------------------------------------------------
-
-Syntax::
-
-    adapters.all([arg1, arg2 ...]);
-
-take 0 or more arguments. It calls every function that match with the arguments.
-The results of the functions are returned inside an array.
-
-adapters.stick
--------------------------------------------------------
-
-Syntax::
-
-    adapters.stick([arg1, arg2 ...]);
-
-It acts like "all" but persist the arguments and the context (this) in the adapter registry.
-Then if anyone use add a new adapter (using add, on or one). It will try to adapt the persisted arguments and fire the result.
-In that case the result will be lost, so it is suitable for functions with a side effect (like event handlers).
-
-adapters.add (alias .on)
----------------------------------------------------
-
-Add a function and 0 or more validators to the adapters.
-If the adapter takes more than one argument (a multiadapter) you must pass the function as last argument.
-
-Syntax::
-
-    adapters.add(func)
-
-    adapters.add(validator, func)
-
-    adapters.add(validator, validator, validator ..., func)
-
-returns the adapters (this method can be chained). The validator will be converted automatically to a function using occamsrazor.match
-If a validator is null it becomes occamsrazor.validator().
-
-adapters.one
----------------------------------------------------
+.one
+----
 The same as .add but the function will be execute only once and them removed.
 
-adapters.notFound
----------------------------------------------------
+.remove (alias .off)
+--------------------
+Syntax:
+```js
+funcs.remove(func);
+```
+or
+```js
+funcs.remove(); // delete all functions
+```
+Delete one or all functions from the function registry. If it is called on a namespaced function registry, it removes only the functions added with through that namespace.
+It returns the function registry, or the namespaced function registry (this method can be chained).
 
-Add a default function to the adapters.
-This will be called whenever no others adapters fit.
+.size
+-----
+Syntax:
+```js
+funcs.size();
+```
+It returns the number of functions in the function registry.
 
-Syntax::
+.merge
+------
+Syntax:
+```js
+funcs1.merge(funcs2, funcs3, ...);
+```
+It returns a new function registry merging all functions of itself and the input function registries.
+Without arguments is equivalent to clone the function registry.
 
-    adapters.notFound(func)
-
-returns the adapters (this method can be chained).
-
-adapters.remove (alias .off)
-------------------------------------
-delete a function from the adapters. Syntax::
-
-    adapters.remove(func);
-
-returns the adapters (this method can be chained).
-If you call it without arguments it will remove all the adapters in the registry.
-
-adapters.size
--------------------------------------------------------
-
-Syntax::
-
-    adapters.size();
-
-returns the number of functions in the adapter.
-
-adapters.merge
--------------------------------------------------------
-
-Syntax::
-
-    adapters1.merge(adapters2, adapters3, ...);
-
-returns an adapter registry that merge all the adapters.
-
-adapters.proxy
--------------------------------------------------------
-
-Syntax::
-
-    var proxy = adapters.proxy();
-
-returns a proxy. This is mostly equivalent to the original adapter registry (you can't call it like a function though, you can use the "adapt" method).
-Every adapter added through the proxy get marked and can get removed easily using remove (called on the proxy)::
-
-    adapters.add(...); // this won't be touched
-    proxy.add(...); // this will be removed
-    proxy.remove(...); // this will be removed
-
-Every method returning an adapter registry, returns a proxy instead.
+.namespace (alias .proxy)
+-------------------------
+Syntax:
+```js
+var proxy = funcs.namespace([name]);
+```
+It returns a namespaced function registry. This is mostly equivalent to the original function registry (you can't call it like a function though, you can use the "adapt" method).
+Every function added through the this object get marked and can get removed easily using remove:
+```js
+funcs.add(...); // this won't be touched
+namespace.add(...); // this will be removed
+namespace.remove(...); // this will be removed
+```
+The name is optional, a random string is used if not defined. You just have to keep the reference.
 
 registry
-------------------------------------
+========
+Syntax:
+```js
+occamsrazor.registry(name);
+```
+Create a registry with a specific name (a registry of registries!!!) in the global namespace (window or global).
+You can use it to get a function registry.
+```js
+registry(functionRegistryName);
+```
+This is created if it doesn't exist.
 
-Create a registry in the global namespace (window or global).
-
-Syntax::
-
-    occamsrazor.registry('math');
-
-You can use a registry to register an adapter::
-
-    registry('functions');
+wrapConstructor
+===============
+Syntax:
+```js
+occamsrazor.wrapConstructor(constructorFunction)
+```
+It transform a constructor function in a simple function that you can call without using "new"
 
 About the name
 ==============
@@ -484,10 +444,4 @@ Occam's Razor:
 This principle is often summarized as "other things being equal, a simpler explanation is better than a more complex one."
 http://en.wikipedia.org/wiki/Occam%27s_razor
 
-Ok this name can be a little pretentious but I think it can effectively describe a library capable to find the most appropriate answer (adapter in this case) from a series of assumptions (validators).
-
-A bit of history
-================
-If you already know Zope 3 and its component architecture you can find here many similarities.
-This library tries to provide the same functionality of the ZCA (zope component architecture). The approach however is quite different: it is based on duck typing validators instead of interfaces.
-I wrote about what I didn't like of Zope component architecture here (http://sithmel.blogspot.it/2012/05/occamsrazorjs-javascript-component.html)
+Ok this name can be a little pretentious but I think it can effectively describe a library capable to find the most appropriate answer (function in this case) from a series of assumptions (validators).
