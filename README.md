@@ -31,10 +31,9 @@ var validator = require('occamsrazor-validator');
 var has_radius = validator().has('radius');
 var has_width  = validator().has('width');
 ```
-A validator is a function that runs over an argument and returns a positive score if the argument matches, or null if it doesn't. You can find further explanations [here](https://github.com/sithmel/occamsrazor-validator)
-Don't worry about the details for now. There is some other example below.
+A validator is a function that runs over an argument and returns a positive score if the argument matches, or null if it doesn't. You can find further explanations [here](https://github.com/sithmel/occamsrazor-validator).
 
-These two validators, match objects with a "radius" or "width" attribute respectively.
+These two validators match objects with a "radius" or "width" attribute respectively.
 Now I create a special function that wraps the two area functions defined previously. I call it "function registry":
 ```js
 var shapeArea = occamsrazor();
@@ -179,11 +178,11 @@ var shapeArea = occamsrazor()
 The shortcuts provide a way to match complex object with a very simple syntax. They have a fixed score:
 ```js
 var registry = occamsrazor()
-  .add('select', {center: {x: undefined, y: undefined }}, 
+  .add('select', {center: {x: undefined, y: undefined }},
     function (command, point) {
       // does something with the point
     });
-  
+
 registry('point', {center: {x: 3, y: 2}}); // this matches!
 ```
 That is the equivalent of the less concise:
@@ -193,11 +192,11 @@ var is_select = validator().match('select');
 var is_point = validator().match({center: {x: undefined, y: undefined }});
 
 var registry = occamsrazor()
-  .add(is_select, is_point, 
+  .add(is_select, is_point,
     function (command, point) {
       // does something with the point
     });
-  
+
 registry('point', {center: {x: 3, y: 2}}); // this matches!
 ```
 
@@ -226,8 +225,8 @@ var results = shapeCalculations.all({width: 10});
 ```
 This will return an array containing all the results.
 
-Using occamsrazor as a publish/subscribe object
-===============================================
+Using it as a publish/subscribe object
+======================================
 Using its matching capabilities and the expressiveness of the shortcut syntax, you can use occamsrazor as an event system:
 ```js
 var pubsub = occamsrazor();
@@ -245,7 +244,7 @@ pubsub.one("selected", has_radius, function (evt, circle){
   console.log('This is executed only once');
 });
 ```
-Usually you'll need to have an event attached (with on) BEFORE triggering it. Some events represent a state change and it is very convenient keeping them published (imagine something like the "ready" jQuery event for example).
+Usually you'll need to have an event handler attached (with .on) BEFORE triggering it. Some events represent a state change and it is very convenient keeping them published (imagine something like the "ready" jQuery event for example).
 You can publish an event permanently using "stick". This method works like trigger but allows to keep the arguments published, so any new event handler fires immediately:
 ```js
 pubsub.on("selected", has_radius, function (evt, circle){
@@ -328,7 +327,7 @@ funcs.adapt([arg1, arg2 ...]);
 ```
 
 it takes 0 or more arguments. It calls the most specific function with the given arguments and returns its result.
-It retains the context (this). If more than one function matches with the same score it throws an exception. 
+It retains the context (this). If more than one function matches with the same score it throws an exception.
 
 .all
 ----
@@ -344,7 +343,7 @@ It retains the context (this). It returns the results of all functions in an arr
 funcs.trigger([arg1, arg2 ...]);
 ```
 it takes 0 or more arguments. It calls all functions that matches, with the given arguments.
-It retains the context (this). It doesn't return the results as it's execution is deferred (using setImmediate). 
+It retains the context (this). It doesn't return the results as it's execution is deferred (using setImmediate).
 
 .stick
 ------
