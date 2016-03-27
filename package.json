@@ -1,6 +1,6 @@
 {
   "name": "occamsrazor",
-  "version": "5.0.0",
+  "version": "4.6.0",
   "description": "A plugin system for Javascript",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "npm-release": "^1.0.0"
   },
   "dependencies": {
-    "occamsrazor-validator": "^5.0.0",
+    "occamsrazor-validator": "^5.1.0",
     "setimmediate": "^1.0.4"
   }
 }
