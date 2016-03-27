@@ -136,8 +136,8 @@ shapeArea.add(has_width_and_height, function (shape, name) {
 });
 ```
 
-Deleting an function
-====================
+Deleting a function
+===================
 If you want to delete a function you can use the "remove" method:
 ```js
 shapeArea.remove(rectangleArea);
