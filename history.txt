@@ -1,5 +1,14 @@
 Changelog
 
+5.0.0 (2016/03/13)
+==================
+
+- using mocha instead of qunit
+- trigger method is async now
+- updated documentation using markdown
+- moved validators in a different package (occamsrazor-validator)
+- undefined as validator matches everything. Null matches null only
+
 4.6.0 (2016/03/09)
 ==================
 

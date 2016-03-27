@@ -1,13 +1,17 @@
 {
   "name": "occamsrazor",
-  "version": "4.6.0",
+  "version": "5.0.0",
   "description": "A plugin system for Javascript",
-  "main": "occamsrazor.js",
-  "directories": {
-    "test": "tests"
-  },
+  "main": "index.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "mocha tests/**/*.js",
+    "watch": "npm run test -- -w",
+    "lint": "./node_modules/.bin/eslint --ext .js ./src ./tests",
+    "release:major": "./node_modules/.bin/npm-release major",
+    "release:minor": "./node_modules/.bin/npm-release minor",
+    "release:patch": "./node_modules/.bin/npm-release patch",
+    "precommit": "npm run lint",
+    "prepush": "npm run test"
   },
   "repository": {
     "type": "git",
@@ -20,12 +24,16 @@
     "adapters"
   ],
   "author": "Maurizio Lupo <maurizio.lupo@gmail.com>",
-  "license": "gpl-mit",
-  "readmeFilename": "README.rst",
-  "gitHead": "38821d9d552829b8aeef15fd6adeae86189c18db",
+  "license": "MIT",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-qunit": "^0.5.2",
-    "grunt-release": "^0.12.0"
+    "chai": "^1.10.0",
+    "eslint": "^1.10.3",
+    "husky": "^0.10.2",
+    "mocha": "^2.1.0",
+    "npm-release": "^1.0.0"
+  },
+  "dependencies": {
+    "occamsrazor-validator": "^5.0.0",
+    "setimmediate": "^1.0.4"
   }
 }
