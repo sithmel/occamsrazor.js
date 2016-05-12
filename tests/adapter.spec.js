@@ -121,16 +121,19 @@ describe('general', function () {
   });
 
   it('must throw on multiple matches', function () {
-    var isAnything = validator();
-
     var func1 = function (a) { return 'func1';};
     var func2 = function (a) { return 'func2';};
 
     var test = occamsrazor()
-    .add(isAnything, func1)
-    .add(isAnything, func2);
+    .add(func1)
+    .add(func2);
 
-    assert.throws(test);
+    assert.throws(test, 'Occamsrazor (get): More than one adapter fits');
+  });
+
+  it('must throw if no matches', function () {
+    var test = occamsrazor();
+    assert.throws(test, 'Occamsrazor (get): Function not found');
   });
 
   describe('adapter hierarchy', function () {

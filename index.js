@@ -55,12 +55,9 @@ var _remove = function (functions, func, ns) {
 
 //get all the functions that validates with args. Sorted by score
 //functions is a list of obj (func, validators)
-var filter_and_sort = function (args, functions, throwOnDuplicated) {
+var filter_and_sort = function (args, functions, onlyOne) {
   var i, result, results = [];
 
-  if (!functions.length) {
-    return [];
-  }
   //get the score function
   //decorate
   for (i = 0; i < functions.length; i++) {
@@ -71,10 +68,15 @@ var filter_and_sort = function (args, functions, throwOnDuplicated) {
       results.push(result);
     }
   }
+
+  if (onlyOne && results.length === 0) {
+    throw new Error("Occamsrazor (get): Function not found");
+  }
+
   //sort
   results.sort().reverse();
 
-  if (throwOnDuplicated && results.length > 1 && results[0].toString() === results[1].toString()){
+  if (onlyOne && results.length > 1 && results[0].toString() === results[1].toString()){
     throw new Error("Occamsrazor (get): More than one adapter fits");
   }
 
@@ -96,11 +98,7 @@ var countdown = function (functions, func){
 //that match with the arguments.
 //The arguments must match with the validators of a registered function
 //functions is a list of obj (func, validators)
-var getOne = function (args, functions, context) {
-  var funcs = filter_and_sort(args, functions, true);
-  if (!funcs.length) {
-    throw new Error("Occamsrazor (get): Function not found");
-  }
+var getOne = function (context, args, funcs, functions) {
   var out = funcs[0].func.apply(context, args);
   countdown(functions, funcs[0]);
   return out;
@@ -108,9 +106,8 @@ var getOne = function (args, functions, context) {
 
 // call all the functions matching with the validators.
 // Returns an array of results
-var getAll = function (args, functions, context) {
-  var i, out = [],
-  funcs = filter_and_sort(args, functions);
+var getAll = function (context, args, funcs, functions) {
+  var i, out = [];
   for (i = 0; i < funcs.length; i++) {
     out.push(funcs[i].func.apply(context, args));
     countdown(functions, funcs[i]);
@@ -124,12 +121,15 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
       stickyArguments = stickyArgs || [];
 
   var occamsrazor = function () {
-    return getOne(Array.prototype.slice.call(arguments), functions, this);
+    var args = Array.prototype.slice.call(arguments);
+    var funcs = filter_and_sort(args, functions, true);
+    return getOne(this, args, funcs, functions);
   };
 
   var getAdd = function (times) {
     return function () {
       var ns = this.ns;
+      var funcs;
       var func = arguments[arguments.length - 1];
       var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
       if (typeof func !== 'function') {
@@ -137,20 +137,25 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
       }
 
       var funcLength = _add(functions, validators, func, times, ns);
+      var _funcs = [functions[funcLength - 1]];
 
       for (var i = 0; i < stickyArguments.length; i++) {
-        setImmediate(function (_stickyArgs, _funcs) {
+        funcs = filter_and_sort(stickyArguments[i].args, _funcs);
+        if (funcs.length === 0) continue;
+        setImmediate(function (_stickyArgs, funcs) {
           return function () {
-            getAll(_stickyArgs.args, _funcs, _stickyArgs.context);
+            getAll(_stickyArgs.context, _stickyArgs.args, funcs, _funcs);
           }
-        }(stickyArguments[i], [functions[funcLength - 1]]));
+        }(stickyArguments[i], funcs));
       }
       return ns ? this : occamsrazor;
     };
   };
 
   occamsrazor.adapt = function adapt() {
-    return getOne(Array.prototype.slice.call(arguments), functions, this);
+    var args = Array.prototype.slice.call(arguments);
+    var funcs = filter_and_sort(args, functions, true);
+    return getOne(this, args, funcs, functions);
   };
 
   occamsrazor.on = occamsrazor.add = getAdd();
@@ -188,22 +193,32 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
   };
 
   occamsrazor.all = function all() {
-    return getAll(Array.prototype.slice.call(arguments), functions, this);
+    var args = Array.prototype.slice.call(arguments);
+    var funcs = filter_and_sort(args, functions);
+    return getAll(this, args, funcs, functions);
   };
 
   occamsrazor.trigger = function trigger() {
     var args = Array.prototype.slice.call(arguments);
-    setImmediate(function () {
-      getAll(args, functions, this);
-    });
+    var that = this;
+    var funcs = filter_and_sort(args, functions);
+    if (funcs.length) {
+      setImmediate(function () {
+        getAll(that, args, funcs, functions);
+      });
+    }
   };
 
   occamsrazor.stick = function stick() {
     var args = Array.prototype.slice.call(arguments);
     stickyArguments.push({context: this, args: args});
-    setImmediate(function () {
-      getAll(args, functions, this);
-    });
+    var that = this;
+    var funcs = filter_and_sort(args, functions);
+    if (funcs.length) {
+      setImmediate(function () {
+        getAll(that, args, funcs, functions);
+      });
+    }
   };
 
   occamsrazor.proxy = occamsrazor.namespace = function proxy(id) {
