@@ -149,6 +149,10 @@ You can also remove all functions with:
 ```js
 shapeArea.remove();
 ```
+You can also remove all functions matching a set of arguments, using "removeIf".
+```js
+shapeArea.removeIf(shape4);
+```
 
 Adding constructor functions
 ============================
@@ -274,6 +278,7 @@ namespace.trigger('selected', {radius: 10});
 namespace.remove(); // this removes only the function above
 pubsub.remove();    // this removes all functions
 ```
+It works with "removeIf" too.
 
 Context
 =======

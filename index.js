@@ -30,7 +30,7 @@ var _add = function (functions, validators, func, times, ns) {
 // remove a func from functions
 // functions is a list of obj (func, validators)
 var _remove = function (functions, func, ns) {
-  var i = 0;
+  var i = 0, shouldRemove = false;
 
   if (!func && !ns) {
     functions.length = 0;
@@ -38,13 +38,15 @@ var _remove = function (functions, func, ns) {
   }
 
   while (i < functions.length) {
-    if ((func && ns) && (functions[i].func === func) && (functions[i].ns === ns)) {
-      functions.splice(i, 1);
+    shouldRemove = false;
+    if (func && ns) {
+      shouldRemove = (functions[i].func === func) && (functions[i].ns === ns);
+    } else if (func) {
+      shouldRemove = functions[i].func === func;
+    } else if (ns) {
+      shouldRemove = functions[i].ns === ns;
     }
-    else if ((func && functions[i].func === func)) {
-      functions.splice(i, 1);
-    }
-    else if ((ns && functions[i].ns === ns)) {
+    if (shouldRemove) {
       functions.splice(i, 1);
     }
     else {
@@ -53,9 +55,13 @@ var _remove = function (functions, func, ns) {
   }
 };
 
-// get all the functions that validates with args. Sorted by score
-// functions is a list of obj (func, validators)
-var filter_and_sort = function (args, functions, onlyOne) {
+var _removeAll = function (functions, funcs, ns) {
+  for (var i = 0; i < funcs.length; i++) {
+    _remove(functions, funcs[i], ns);
+  }
+};
+
+var decorate_and_filter = function (args, functions) {
   var i, result, results = [];
 
   // get the score function
@@ -68,6 +74,17 @@ var filter_and_sort = function (args, functions, onlyOne) {
       results.push(result);
     }
   }
+  return results;
+};
+
+var undecorate = function (results) {
+  return results.map(function (r) {return r.payload;});
+};
+
+// get all the functions that validates with args. Sorted by score
+// functions is a list of obj (func, validators)
+var filter_and_sort = function (args, functions, onlyOne) {
+  var results = decorate_and_filter(args, functions);
 
   if (onlyOne && results.length === 0) {
     throw new Error('Occamsrazor (get): Function not found');
@@ -81,7 +98,7 @@ var filter_and_sort = function (args, functions, onlyOne) {
   }
 
   // undecorate
-  return results.map(function (r) {return r.payload;});
+  return undecorate(results);
 };
 
 // manage countdown (really only using 1 for now)
@@ -189,6 +206,15 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
   occamsrazor.remove = occamsrazor.off = function remove(func) {
     var ns = this.ns;
     _remove(functions, func, ns);
+    return ns ? this : occamsrazor;
+  };
+
+  occamsrazor.removeIf = function removeMatching() {
+    var args = Array.prototype.slice.call(arguments);
+    var results = decorate_and_filter(args, functions);
+    var funcs = undecorate(results).map(function (r) { return r.func; });
+    var ns = this.ns;
+    _removeAll(functions, funcs, ns);
     return ns ? this : occamsrazor;
   };
 

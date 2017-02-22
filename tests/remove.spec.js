@@ -23,3 +23,26 @@ describe('remove', function () {
     assert.equal(adapter._functions().length, 1);
   });
 });
+
+describe('removeIf', function () {
+  var adapter, f1, f2, adapter;
+  beforeEach(function () {
+    adapter = occamsrazor();
+    f1 = function () {};
+    f2 = function () {};
+    adapter.on('test1', f1);
+    adapter.on('test2', f2);
+  });
+
+  it('removing nothing', function () {
+    assert.equal(adapter._functions().length, 2);
+    adapter.removeIf('test3');
+    assert.equal(adapter._functions().length, 2);
+  });
+
+  it('removing 1 function', function () {
+    assert.equal(adapter._functions().length, 2);
+    adapter.removeIf('test1');
+    assert.equal(adapter._functions().length, 1);
+  });
+});

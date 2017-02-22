@@ -18,6 +18,12 @@ describe('proxy', function () {
     assert.equal(adapter._functions().length, 1);
   });
 
+  it('add/remove to proxy (using removeIf)', function () {
+    assert.equal(adapter._functions().length, 2);
+    proxy.removeIf('test1');
+    assert.equal(adapter._functions().length, 1);
+  });
+
   it('add/remove to adapter', function () {
     assert.equal(adapter._functions().length, 2);
     adapter.remove();

@@ -1,5 +1,11 @@
 Changelog
 
+5.1.0 (2017/02/22)
+==================
+
+- fixed bug where undefined gets transformed in a validator of score 0 (it was 1)
+- added removeIf method
+
 5.0.0 (2016/03/13)
 ==================
 
@@ -130,7 +136,7 @@ Changelog
   as validator
 - renamed method "validator" with "chain". From now It
   can be used only for chaining validators
-- "this" i correctly passed to the functions
+- "this" is correctly passed to the functions
 - refactored tests
 - changed the order of "add" method. Now is more readable.
 - new aliases for the methods
