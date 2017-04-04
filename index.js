@@ -149,11 +149,10 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
       var funcs;
       var func = arguments[arguments.length - 1];
       var validators = arguments.length > 1 ? Array.prototype.slice.call(arguments, 0, -1) : [];
-      if (typeof func !== 'function') {
-        throw new Error('Occamsrazor (add): The last argument MUST be a function');
-      }
 
-      var funcLength = _add(functions, validators, func, times, ns);
+      var _func = typeof func === 'function' ? func : function () { return func; };
+
+      var funcLength = _add(functions, validators, _func, times, ns);
       var _funcs = [functions[funcLength - 1]];
 
       for (var i = 0; i < stickyArguments.length; i++) {

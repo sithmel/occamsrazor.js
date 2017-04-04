@@ -8,17 +8,17 @@ Tutorial
 ========
 Let's say you have some objects:
 ```js
-var shape1 = {radius: 10};
-var shape2 = {radius: 5};
-var shape3 = {width: 5};
+var shape1 = { radius: 10 };
+var shape2 = { radius: 5 };
+var shape3 = { width: 5 };
 ```
 Every object represents a different shape. You need to calculate the area of these objects.
 ```js
-var circleArea = function (circle){
+var circleArea = function (circle) {
   return circle.radius * circle.radius * Math.PI;
 };
 
-var squareArea = function (square){
+var squareArea = function (square) {
   return square.width * square.width;
 };
 ```
@@ -64,17 +64,17 @@ Adding a more specific function
 Validators with different scores allow to choose different functions.
 Now I add another type of shape, a rectangle:
 ```js
-var shape4 = {width: 5, height: 6};
+var shape4 = { width: 5, height: 6 };
 ```
 A rectangle has both width and height so you will define a more specific validator:
 ```js
-var has_width_and_height = validator() // this scores 1
-  .has('width')                        // this scores 2
-  .has('height');                      // this scores 3
+var has_width_and_height = validator() // this scores 0
+  .has('width')                        // this scores 1
+  .has('height');                      // this scores 2
 ```
 Every time you extend a validator, you get a new one so you could instead extend the previous one:
 ```js
-var has_width_and_height = has_width.has('height'); // score 3
+var has_width_and_height = has_width.has('height'); // score 2
 ```
 But pay attention! this is different from defining a validator like this:
 ```js
@@ -84,7 +84,7 @@ The last one has the same specificity of has_width so occamsrazor won't be able 
 
 The score of this validator gets bigger every time is chained with another one:
 ```js
-var is_parallelepiped = has_width_and_height.has('depth');
+var is_parallelepiped = has_width_and_height.has('depth'); // score 3
 ```
 shape4 fits the description of a rectangle and a square (they both has a width) but the has_width_and_height validator is more specific.
 Using this validator you can add another function:
@@ -104,7 +104,7 @@ If the arguments (shape4 in the previous example) matches with more than one fun
 Matching more than one argument
 ===============================
 In the previous example you used a validator to match an argument, in reality you can match any number of arguments.
-This one doesn't try to match any argument.
+The next one doesn't try to match any argument.
 ```js
 shapeArea.add(function (shape) {
   return 'I can\'t calculate the area';
@@ -120,11 +120,11 @@ shapeArea.add(has_width, has_width, function (shape1, shape2) {
 You might wonder how the system decide to match a function or another. Well, all the respective scores are put in an array and compared. For example:
 ```js
 [] // this has the lowest score, it doesn't match any argument
-[1] > []
-[2] > [1]
-[1, 1] > [1]
-[1, 1] > [1, 0]
-[2, 1] > [1, 9, 9, 9]
+[0] > []
+[1] > [0]
+[0, 0] > [1]
+[0, 1] > [0, 0]
+[1, 0] > [0, 8, 8, 8]
 ```
 In the "add" method you specify the arguments you want to match but you are not forced to validate all arguments passed to the function.
 ```js
@@ -134,6 +134,7 @@ shapeArea.add(has_width_and_height, function (shape, name) {
   console.log(name + ' is a rectangle');
 });
 ```
+The smaller score you can have is 0 (validator()) and it is so generic that matches anything.
 
 Deleting a function
 ===================
@@ -149,7 +150,7 @@ You can also remove all functions with:
 ```js
 shapeArea.remove();
 ```
-You can also remove all functions matching a set of arguments, using "removeIf".
+If you want to remove all functions matching a set of arguments, you can use "removeIf".
 ```js
 shapeArea.removeIf(shape4);
 ```
@@ -176,24 +177,24 @@ Shortcut validators
 Validators can be expressed in a shorter way as documented [here](https://github.com/sithmel/occamsrazor-validator#validatormatch)
 ```js
 var shapeArea = occamsrazor()
-  .add({radius: undefined}, circleArea)
-  .add({width: undefined}, squareArea);
+  .add({ radius: undefined }, circleArea)
+  .add({ width: undefined }, squareArea);
 ```
 The shortcuts provide a way to match complex object with a very simple syntax. They have a fixed score:
 ```js
 var registry = occamsrazor()
-  .add('select', {center: {x: undefined, y: undefined }},
+  .add('select', { center: { x: undefined, y: undefined } },
     function (command, point) {
       // does something with the point
     });
 
-registry('point', {center: {x: 3, y: 2}}); // this matches!
+registry('point', { center: { x: 3, y: 2 }}); // this matches!
 ```
 That is the equivalent of the less concise:
 ```js
 var validator = require('occamsrazor-validator');
 var is_select = validator().match('select');
-var is_point = validator().match({center: {x: undefined, y: undefined }});
+var is_point = validator().match({ center: { x: undefined, y: undefined }});
 
 var registry = occamsrazor()
   .add(is_select, is_point,
@@ -201,13 +202,13 @@ var registry = occamsrazor()
       // does something with the point
     });
 
-registry('point', {center: {x: 3, y: 2}}); // this matches!
+registry('point', { center: { x: 3, y: 2 }}); // this matches!
 ```
 
 
 Getting all
 ===========
-So far you have used occamsrazor to get the most specific function (the one with the highest specificity score). You can also get all functions matching the validators, no matter what the score is:
+So far you have used occamsrazor to get the most specific function (the one with the highest score). You can also get all functions matching the validators, no matter what the score is:
 ```js
 var shapeCalculations = occamsrazor()
   .add(has_width, function (shape) {
@@ -227,7 +228,7 @@ var results = shapeCalculations.all({width: 10});
 
 // ['Perimeter is 40', 'Area is 100']
 ```
-This will return an array containing all the results.
+This will return an array containing all the results. They will be sorted starting with the most specific.
 
 Using it as a publish/subscribe object
 ======================================
@@ -237,27 +238,27 @@ var pubsub = occamsrazor();
 pubsub.on('selected', has_radius, function(eventName, shape) {
   // do something with the shape
 });
-pubsub.trigger('selected', {radius: 10});
+pubsub.trigger('selected', { radius: 10 });
 ```
 ".on" attaches an event handler and ".trigger" runs all the event handlers matching its arguments.
-In reality ".on" is an alias of ".add" and ".trigger" is a slightly modified version of .all (it doesn't return the result of the functions and it defers the execution using setImmediate).
+In reality ".on" is an alias of ".add" and ".trigger" is a slightly modified version of .all (it doesn't return the result of the functions and it defers the execution to the next tick).
 Of course you can remove the event handler using ".off" (an alias of remove).
 If you need to handle the event only once there is a special method ".one":
 ```js
-pubsub.one("selected", has_radius, function (evt, circle){
+pubsub.one("selected", has_radius, function (evt, circle) {
   console.log('This is executed only once');
 });
 ```
-Usually you'll need to have an event handler attached (with .on) BEFORE triggering it. Some events represent a state change and it is very convenient keeping them published (imagine something like the "ready" jQuery event for example).
+Usually you'll need to have an event handler attached (with .on) BEFORE triggering it. Some event represent a state change and it is very convenient keeping them published (imagine something like the "ready" jQuery event for example).
 You can publish an event permanently using "stick". This method works like trigger but allows to keep the arguments published, so any new event handler fires immediately:
 ```js
-pubsub.on("selected", has_radius, function (evt, circle){
+pubsub.on("selected", has_radius, function (evt, circle) {
   console.log('Circle is selected and the radius is ', circle.radius);
 });
 
-pubsub.stick("selected", {radius: 10});
+pubsub.stick("selected", { radius: 10 });
 
-pubsub.on("selected", has_radius, function (evt, circle){
+pubsub.on("selected", has_radius, function (evt, circle) {
   console.log('This will be fired as well!');
 });
 ```
@@ -272,8 +273,8 @@ namespace.on('selected', has_radius, function () {
 });
 
 // the following are exactly the same
-pubsub.trigger('selected', {radius: 10});
-namespace.trigger('selected', {radius: 10});
+pubsub.trigger('selected', { radius: 10 });
+namespace.trigger('selected', { radius: 10 });
 
 namespace.remove(); // this removes only the function above
 pubsub.remove();    // this removes all functions
@@ -370,6 +371,7 @@ funcs.add(validator, validator, validator ..., func);
 Add a function and 0 or more validators to the function registry. The function is always the last argument.
 
 It returns the function registry, or the namespaced function registry (this method can be chained). The validator will be converted automatically to a function using [validator.match]((https://github.com/sithmel/occamsrazor-validator#validatormatch))
+If the last argument is not a function this is converted automatically to a function returning that value.
 
 .one
 ----

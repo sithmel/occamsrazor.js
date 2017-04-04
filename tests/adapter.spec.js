@@ -113,6 +113,12 @@ describe('general', function () {
     assert.equal(print_test() , 'test');
   });
 
+  it('must work using a object instead', function () {
+    var print_test = occamsrazor.adapters()
+    .add('test');
+    assert.equal(print_test() , 'test');
+  });
+
   it('must convert undefined to isAnything', function () {
     var works = occamsrazor().add(undefined, function (x) {
       return x;

@@ -1,5 +1,10 @@
 Changelog
 
+5.1.1 (2017/04/04)
+==================
+
+- method add, on: the last argument is converted automatically to a function
+
 5.1.0 (2017/02/22)
 ==================
 
