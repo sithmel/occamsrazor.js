@@ -10,13 +10,13 @@ describe('adapter', function () {
 
   before(function () {
     // validators
-    is_instrument = validator().chain(function (obj) {
+    is_instrument = validator().match(function is_instrument(obj) {
       return 'instrument_name' in obj;
     });
-    is_guitar = is_instrument.chain( function (obj) {
+    is_guitar = is_instrument.match( function is_guitar(obj) {
       return 'nStrings' in obj;
     });
-    is_electricguitar = is_guitar.chain(function (obj) {
+    is_electricguitar = is_guitar.match(function is_electricguitar(obj) {
       return 'ampli' in obj;
     });
     // objects
@@ -44,6 +44,12 @@ describe('adapter', function () {
     player = occamsrazor()
     .add(is_guitar, folkGuitarPlayer)
     .add(is_electricguitar, rockGuitarPlayer);
+  });
+
+  it('can be inspected', function () {
+    assert.equal(player._functions().length, 2);
+    assert.equal(player._functions()[0].validators.name, 'and(is_instrument is_guitar) (score: 2)');
+    assert.equal(player._functions()[1].validators.name, 'and(is_instrument is_guitar is_electricguitar) (score: 3)');
   });
 
   it('must be correct size', function () {
@@ -149,7 +155,7 @@ describe('general', function () {
 
     beforeEach(function () {
       isAnything = validator();
-      isNumber = validator().chain(function (obj) {
+      isNumber = validator().match(function (obj) {
         return typeof obj === 'number';
       });
 
@@ -189,7 +195,7 @@ describe('general', function () {
   describe('multiadapter', function () {
     var is_number, sum, hello;
     before(function () {
-      is_number = validator().chain(function (obj) {
+      is_number = validator().match(function isNumber(obj) {
         return typeof obj === 'number' && ! isNaN(obj);
       });
 
@@ -202,6 +208,11 @@ describe('general', function () {
       .add('hello', ' ', 'world!', function (a,b,c) {
         return a + b + c;
       });
+    });
+
+    it('can be inspected', function () {
+      assert.equal(sum._functions().length, 1);
+      assert.equal(sum._functions()[0].validators.name, 'isNumber (score: 1), isNumber (score: 1), isNumber (score: 1)');
     });
 
     it('must execute a function with 3 arguments', function () {

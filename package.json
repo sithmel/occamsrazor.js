@@ -33,7 +33,7 @@
     "npm-release": "^1.0.0"
   },
   "dependencies": {
-    "occamsrazor-validator": "^6.0.0",
+    "occamsrazor-validator": "^8.0.0",
     "setimmediate": "^1.0.4"
   }
 }

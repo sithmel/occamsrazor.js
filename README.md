@@ -335,7 +335,7 @@ funcs.adapt([arg1, arg2 ...]);
 it takes 0 or more arguments. It calls the most specific function with the given arguments and returns its result.
 It retains the context (this). If more than one function matches with the same score it throws an exception.
 
-.all
+.all (alias .triggerSync)
 ----
 ```js
 funcs.all([arg1, arg2 ...]);

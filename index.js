@@ -11,16 +11,14 @@ var _add = function (functions, validators, func, times, ns) {
     if (typeof validators[i] === 'undefined') {
       validators[i] = validator();
     }
-    else {
-      if (!(typeof validators[i] === 'function' && 'score' in validators[i])) {
-        validators[i] = validator().match(validators[i]);
-      }
+    else if (!(typeof validators[i] === 'function' && 'score' in validators[i])) {
+      validators[i] = validator().match(validators[i]);
     }
   }
 
   functions.push({
     func: func,
-    validators: validator.combine.apply(undefined, validators),
+    validators: validator.combine(validators),
     times: times,
     ns: ns
   });
@@ -67,7 +65,7 @@ var decorate_and_filter = function (args, functions) {
   // get the score function
   // decorate
   for (i = 0; i < functions.length; i++) {
-    result = functions[i].validators.apply(undefined, args);
+    result = functions[i].validators(args);
     // filter
     if (result) {
       result.payload = functions[i];
@@ -208,7 +206,7 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
     return ns ? this : occamsrazor;
   };
 
-  occamsrazor.removeIf = function removeMatching() {
+  occamsrazor.removeIf = function removeIf() {
     var args = Array.prototype.slice.call(arguments);
     var results = decorate_and_filter(args, functions);
     var funcs = undecorate(results).map(function (r) { return r.func; });
@@ -217,7 +215,7 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
     return ns ? this : occamsrazor;
   };
 
-  occamsrazor.all = function all() {
+  occamsrazor.all = occamsrazor.triggerSync = function all() {
     var args = Array.prototype.slice.call(arguments);
     var funcs = filter_and_sort(args, functions);
     return getAll(this, args, funcs, functions);

@@ -38,7 +38,7 @@ describe('proxy', function () {
     assert.deepEqual(adapter.all('test1'), [2, 1]);
   });
 
-  it('proxy should return proxy on chaining', function () {
+  it('proxy should return proxy on matching', function () {
     var maybeadapter = adapter.add('test1', f1);
     var maybeproxy = proxy.add('test1', f1);
 
