@@ -181,7 +181,7 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
 
   occamsrazor.merge = function merge() {
     var unFlattenAdapterFuncs = Array.prototype.map.call(arguments, function (adapter) {
-      return adapter._functions();
+      return adapter.functions();
     });
     var adapterFuncs = Array.prototype.concat.apply(functions, unFlattenAdapterFuncs);
 
@@ -192,7 +192,7 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
     return _occamsrazor(adapterFuncs, stickyArguments);
   };
 
-  occamsrazor._functions = function _functions() {
+  occamsrazor.functions = function _functions() {
     return functions;
   };
 

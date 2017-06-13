@@ -1,5 +1,11 @@
 Changelog
 
+6.0.0 (2017/06/13)
+==================
+- added alias "triggerSync". It is the same as "all".
+- embedded new "occamsrazor-match" library. Validators are now very easy to debug
+- method "functions" returns all registry. Useful for debugging.
+
 5.1.1 (2017/04/04)
 ==================
 

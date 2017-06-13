@@ -47,9 +47,9 @@ describe('adapter', function () {
   });
 
   it('can be inspected', function () {
-    assert.equal(player._functions().length, 2);
-    assert.equal(player._functions()[0].validators.name, 'and(is_instrument is_guitar) (score: 2)');
-    assert.equal(player._functions()[1].validators.name, 'and(is_instrument is_guitar is_electricguitar) (score: 3)');
+    assert.equal(player.functions().length, 2);
+    assert.equal(player.functions()[0].validators.name, 'and(is_instrument is_guitar) (score: 2)');
+    assert.equal(player.functions()[1].validators.name, 'and(is_instrument is_guitar is_electricguitar) (score: 3)');
   });
 
   it('must be correct size', function () {
@@ -211,8 +211,8 @@ describe('general', function () {
     });
 
     it('can be inspected', function () {
-      assert.equal(sum._functions().length, 1);
-      assert.equal(sum._functions()[0].validators.name, 'isNumber (score: 1), isNumber (score: 1), isNumber (score: 1)');
+      assert.equal(sum.functions().length, 1);
+      assert.equal(sum.functions()[0].validators.name, 'isNumber (score: 1), isNumber (score: 1), isNumber (score: 1)');
     });
 
     it('must execute a function with 3 arguments', function () {

@@ -422,6 +422,14 @@ namespace.remove(...); // this will be removed
 ```
 The name is optional, a random string is used if not defined. You just have to keep the reference.
 
+.functions
+----------------
+Syntax:
+```js
+funcs.functions();
+```
+It exposes the internal registry of all functions. Useful for debugging purposes.
+
 registry
 ========
 Syntax:
