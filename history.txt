@@ -1,5 +1,13 @@
 Changelog
 
+7.0.0 (2017/06/27)
+==================
+- new "occamsrazor-match". Small but breaking change on validator semantic. When using an object it does not enforce the existence of the attributes.
+
+6.0.1 (2017/06/23)
+==================
+- updates on "occamsrazor-match" bugfixes on safari 9. It was throwing when setting the function name
+
 6.0.0 (2017/06/13)
 ==================
 - added alias "triggerSync". It is the same as "all".

@@ -28,10 +28,12 @@ This is where occamsrazor enter.
 First of all you need some validator. A validator will help to identify a "shape":
 ```js
 var validator = require('occamsrazor-validator');
-var has_radius = validator().has('radius');
-var has_width  = validator().has('width');
+var isNUmber = require('occamsrazor-match/extra/isNumber');
+
+var has_radius = validator().match({ radius: isNumber });
+var has_width  = validator().match({ width: isNumber });
 ```
-A validator is a function that runs over an argument and returns a positive score if the argument matches, or null if it doesn't. You can find further explanations [here](https://github.com/sithmel/occamsrazor-validator).
+A validator is a function that runs over an argument and returns a positive score if the argument matches, or null if it doesn't. You can find further explanations [here](https://github.com/sithmel/occamsrazor-validator) and [here](https://github.com/sithmel/occamsrazor-match)
 
 These two validators match objects with a "radius" or "width" attribute respectively.
 Now I create a special function that wraps the two area functions defined previously. I call it "function registry":
@@ -69,22 +71,22 @@ var shape4 = { width: 5, height: 6 };
 A rectangle has both width and height so you will define a more specific validator:
 ```js
 var has_width_and_height = validator() // this scores 0
-  .has('width')                        // this scores 1
-  .has('height');                      // this scores 2
+  .match({ width: isNumber })                        // this scores 1
+  .match({ height: isNumber });                      // this scores 2
 ```
 Every time you extend a validator, you get a new one so you could instead extend the previous one:
 ```js
-var has_width_and_height = has_width.has('height'); // score 2
+var has_width_and_height = has_width.match({ height: isNumber }); // score 2
 ```
 But pay attention! this is different from defining a validator like this:
 ```js
-var wrong_has_width_and_height = validator().has('width', 'height'); // score 2
+var wrong_has_width_and_height = validator().match({ height: isNumber, width: isNumber }); // score 2
 ```
 The last one has the same specificity of has_width so occamsrazor won't be able to decide what function to use!
 
 The score of this validator gets bigger every time is chained with another one:
 ```js
-var is_parallelepiped = has_width_and_height.has('depth'); // score 3
+var is_parallelepiped = has_width_and_height.match({ depth: isNumber }); // score 3
 ```
 shape4 fits the description of a rectangle and a square (they both has a width) but the has_width_and_height validator is more specific.
 Using this validator you can add another function:
@@ -174,16 +176,18 @@ The prototype chain and "constructor" attribute will work as expected.
 
 Shortcut validators
 ===================
-Validators can be expressed in a shorter way as documented [here](https://github.com/sithmel/occamsrazor-validator#validatormatch)
+Validators can be expressed in a shorter way as documented [here](https://github.com/sithmel/occamsrazor-validator#validatormatch) and [here](https://github.com/sithmel/occamsrazor-match)
 ```js
+var isNumber = require('occamsrazor-match/extra/isNumber');
+
 var shapeArea = occamsrazor()
-  .add({ radius: undefined }, circleArea)
-  .add({ width: undefined }, squareArea);
+  .add({ radius: isNumber }, circleArea)
+  .add({ width: isNumber }, squareArea);
 ```
 The shortcuts provide a way to match complex object with a very simple syntax. They have a fixed score:
 ```js
 var registry = occamsrazor()
-  .add('select', { center: { x: undefined, y: undefined } },
+  .add('select', { center: { x: isNumber, y: isNumber } },
     function (command, point) {
       // does something with the point
     });
@@ -194,7 +198,7 @@ That is the equivalent of the less concise:
 ```js
 var validator = require('occamsrazor-validator');
 var is_select = validator().match('select');
-var is_point = validator().match({ center: { x: undefined, y: undefined }});
+var is_point = validator().match({ center: { x: isNumber, y: isNumber }});
 
 var registry = occamsrazor()
   .add(is_select, is_point,
