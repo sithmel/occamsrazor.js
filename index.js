@@ -130,6 +130,15 @@ var getAll = function (context, args, funcs, functions) {
   return out;
 };
 
+var triggerAll = function (context, args, funcs, functions) {
+  for (var i = 0; i < funcs.length; i++) {
+    setImmediate((function (func) {
+      return function () { func.func.apply(context, args); };
+    }(funcs[i])));
+    countdown(functions, funcs[i]);
+  }
+};
+
 // main function
 var _occamsrazor = function (adapterFuncs, stickyArgs) {
   var functions = adapterFuncs || [],
@@ -155,12 +164,7 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
 
       for (var i = 0; i < stickyArguments.length; i++) {
         funcs = filter_and_sort(stickyArguments[i].args, _funcs);
-        if (funcs.length === 0) continue;
-        setImmediate(function (_stickyArgs, funcs) {
-          return function () {
-            getAll(_stickyArgs.context, _stickyArgs.args, funcs, _funcs);
-          };
-        }(stickyArguments[i], funcs));
+        triggerAll(stickyArguments[i].context, stickyArguments[i].args, funcs, _funcs);
       }
       return ns ? this : occamsrazor;
     };
@@ -223,25 +227,15 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
 
   occamsrazor.trigger = function trigger() {
     var args = Array.prototype.slice.call(arguments);
-    var that = this;
     var funcs = filter_and_sort(args, functions);
-    if (funcs.length) {
-      setImmediate(function () {
-        getAll(that, args, funcs, functions);
-      });
-    }
+    triggerAll(this, args, funcs, functions);
   };
 
   occamsrazor.stick = function stick() {
     var args = Array.prototype.slice.call(arguments);
     stickyArguments.push({context: this, args: args});
-    var that = this;
     var funcs = filter_and_sort(args, functions);
-    if (funcs.length) {
-      setImmediate(function () {
-        getAll(that, args, funcs, functions);
-      });
-    }
+    triggerAll(this, args, funcs, functions);
   };
 
   occamsrazor.proxy = occamsrazor.namespace = function proxy(id) {

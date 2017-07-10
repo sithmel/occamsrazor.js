@@ -1,5 +1,9 @@
 Changelog
 
+7.0.1 (2017/07/10)
+==================
+- using trigger, handlers are now running in a different execution frame
+
 7.0.0 (2017/06/27)
 ==================
 - new "occamsrazor-match". Small but breaking change on validator semantic. When using an object it does not enforce the existence of the attributes.
