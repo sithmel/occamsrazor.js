@@ -362,6 +362,14 @@ funcs.stick([arg1, arg2 ...]);
 ```
 It works the same as trigger, the arguments (including the current context "this") are stored forever. When an new function is added (using "add", "on" or "one"), it is executed immediatly (if it matches).
 
+.unstick
+------
+```js
+funcs.unstick(validator, validator, validator, ...);
+```
+It takes some validators, just like the .add/.on method (but without the callback).
+Every event added with stick mathing those arguments is removed.
+
 .add (alias .on)
 ----------------
 Syntax:
@@ -400,7 +408,7 @@ Syntax:
 ```js
 funcs.size();
 ```
-It returns the number of functions in the function registry.
+It returns the number of functions in the function registry. If you pass arguments to "size" you will get the number of functions matching those arguments.
 
 .merge
 ------
@@ -433,6 +441,7 @@ Syntax:
 funcs.functions();
 ```
 It exposes the internal registry of all functions. Useful for debugging purposes.
+If you pass arguments to this method, these will be used to filter what functions return.
 
 registry
 ========

@@ -54,4 +54,33 @@ describe('stick', function () {
     }, 4);
   });
 
+  it('must unstick event', function (done) {
+    var executed = '';
+    adapter.on('match', function () {
+      executed += 'A';
+    });
+    adapter.on('notmatch', function () {
+      executed += 'B';
+    });
+
+    adapter.stick('match');
+    adapter.stick('xxx');
+    assert.equal(adapter._stickyArguments().length, 2);
+    adapter.unstick('match');
+    assert.equal(adapter._stickyArguments().length, 1);
+
+    setTimeout(function () {
+      adapter.on('match', function () {
+        executed += 'C';
+      });
+      adapter.on('notmatch', function () {
+        executed += 'D';
+      });
+      setTimeout(function () {
+        assert.equal(executed , 'A');
+        done();
+      }, 4);
+    }, 4);
+  });
+
 });

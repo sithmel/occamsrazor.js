@@ -2,23 +2,25 @@ require('setimmediate');
 var validator = require('occamsrazor-validator');
 var wrapConstructor = require('./lib/wrap-constructor');
 
+var _combineValidators = function (validators) {
+  return validator.combine(validators.map(function (v) {
+    if (typeof v === 'undefined') {
+      return validator();
+    } else if (!(typeof v === 'function' && 'score' in v)) {
+      return validator().match(v);
+    } else {
+      return v;
+    }
+  }));
+};
+
 // add a function: func must be a function.
 // validators is an array of validators
 // functions is a list of obj (func, validators)
 var _add = function (functions, validators, func, times, ns) {
-  var i;
-  for (i = 0; i < validators.length; i++) {
-    if (typeof validators[i] === 'undefined') {
-      validators[i] = validator();
-    }
-    else if (!(typeof validators[i] === 'function' && 'score' in validators[i])) {
-      validators[i] = validator().match(validators[i]);
-    }
-  }
-
   functions.push({
     func: func,
-    validators: validator.combine(validators),
+    validators: _combineValidators(validators),
     times: times,
     ns: ns
   });
@@ -180,7 +182,9 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
   occamsrazor.one =  getAdd(1);
 
   occamsrazor.size = function size() {
-    return functions.length;
+    var args = Array.prototype.slice.call(arguments);
+    var funcs = args.length ? filter_and_sort(args, functions) : functions;
+    return funcs.length;
   };
 
   occamsrazor.merge = function merge() {
@@ -197,7 +201,9 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
   };
 
   occamsrazor.functions = function _functions() {
-    return functions;
+    var args = Array.prototype.slice.call(arguments);
+    var funcs = args.length ? filter_and_sort(args, functions) : functions;
+    return funcs;
   };
 
   occamsrazor._stickyArguments = function _stickyArguments() {
@@ -236,6 +242,14 @@ var _occamsrazor = function (adapterFuncs, stickyArgs) {
     stickyArguments.push({context: this, args: args});
     var funcs = filter_and_sort(args, functions);
     triggerAll(this, args, funcs, functions);
+  };
+
+  occamsrazor.unstick = function unstick() {
+    var args = Array.prototype.slice.call(arguments);
+    var validator = _combineValidators(args);
+    stickyArguments = stickyArguments.filter(function (sticky) {
+      return !validator(sticky.args);
+    });
   };
 
   occamsrazor.proxy = occamsrazor.namespace = function proxy(id) {

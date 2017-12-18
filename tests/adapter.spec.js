@@ -56,6 +56,10 @@ describe('adapter', function () {
     assert.equal(player.size(), 2);
   });
 
+  it('must return number of matching function passing arguments to size', function () {
+    assert.equal(player.size(guitar), 1);
+  });
+
   it('must adapt using most specific function', function () {
     assert.equal(player(guitar) , 'Strumming with guitar');
     assert.equal(player(electricguitar) , 'A solo with electric guitar and marshall');
