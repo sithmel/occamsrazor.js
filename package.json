@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha tests/**/*.js",
     "watch": "npm run test -- -w",
-    "lint": "./node_modules/.bin/eslint --ext .js ./src ./tests",
+    "lint": "eslint --fix --ext .js ./src ./tests",
     "release:major": "./node_modules/.bin/npm-release major",
     "release:minor": "./node_modules/.bin/npm-release minor",
     "release:patch": "./node_modules/.bin/npm-release patch",
@@ -26,10 +26,15 @@
   "author": "Maurizio Lupo <maurizio.lupo@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^1.10.0",
-    "eslint": "^1.10.3",
-    "husky": "^0.10.2",
-    "mocha": "^2.1.0",
+    "chai": "^4.1.2",
+    "eslint": "^4.17.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "husky": "^0.14.3",
+    "mocha": "^5.0.0",
     "npm-release": "^1.0.0"
   },
   "dependencies": {

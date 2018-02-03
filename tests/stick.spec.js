@@ -1,86 +1,85 @@
-var assert = require('chai').assert;
-var occamsrazor = require('..');
+/* eslint-env node, mocha */
+var assert = require('chai').assert
+var occamsrazor = require('..')
 
 describe('stick', function () {
-  var adapter;
+  var adapter
   beforeEach(function () {
-    adapter = occamsrazor();
-  });
+    adapter = occamsrazor()
+  })
 
   it('must trigger without stick', function (done) {
-    var executed = '';
+    var executed = ''
     adapter.on('match', function () {
-      executed += 'A';
-    });
+      executed += 'A'
+    })
     adapter.on('notmatch', function () {
-      executed += 'B';
-    });
+      executed += 'B'
+    })
 
-    adapter.trigger('match');
+    adapter.trigger('match')
 
     setTimeout(function () {
       adapter.on('match', function () {
-        executed += 'C';
-      });
+        executed += 'C'
+      })
       adapter.on('notmatch', function () {
-        executed += 'D';
-      });
-      assert.equal(executed , 'A');
-      done();
-    }, 4);
-
-  });
+        executed += 'D'
+      })
+      assert.equal(executed, 'A')
+      done()
+    }, 4)
+  })
 
   it('must trigger with stick', function (done) {
-    var executed = '';
+    var executed = ''
     adapter.on('match', function () {
-      executed += 'A';
-    });
+      executed += 'A'
+    })
     adapter.on('notmatch', function () {
-      executed += 'B';
-    });
-    adapter.stick('match');
+      executed += 'B'
+    })
+    adapter.stick('match')
     setTimeout(function () {
       adapter.on('match', function () {
-        executed += 'C';
-      });
+        executed += 'C'
+      })
       adapter.on('notmatch', function () {
-        executed += 'D';
-      });
+        executed += 'D'
+      })
       setTimeout(function () {
-        assert.equal(executed , 'AC');
-        done();
-      }, 4);
-    }, 4);
-  });
+        assert.equal(executed, 'AC')
+        done()
+      }, 4)
+    }, 4)
+  })
 
   it('must unstick event', function (done) {
-    var executed = '';
+    var executed = ''
     adapter.on('match', function () {
-      executed += 'A';
-    });
+      executed += 'A'
+    })
     adapter.on('notmatch', function () {
-      executed += 'B';
-    });
+      executed += 'B'
+    })
 
-    adapter.stick('match');
-    adapter.stick('xxx');
-    assert.equal(adapter._stickyArguments().length, 2);
-    adapter.unstick('match');
-    assert.equal(adapter._stickyArguments().length, 1);
+    adapter.stick('match')
+    adapter.stick('xxx')
+    assert.equal(adapter._stickyArguments().length, 2)
+    adapter.unstick('match')
+    assert.equal(adapter._stickyArguments().length, 1)
 
     setTimeout(function () {
       adapter.on('match', function () {
-        executed += 'C';
-      });
+        executed += 'C'
+      })
       adapter.on('notmatch', function () {
-        executed += 'D';
-      });
+        executed += 'D'
+      })
       setTimeout(function () {
-        assert.equal(executed , 'A');
-        done();
-      }, 4);
-    }, 4);
-  });
-
-});
+        assert.equal(executed, 'A')
+        done()
+      }, 4)
+    }, 4)
+  })
+})
