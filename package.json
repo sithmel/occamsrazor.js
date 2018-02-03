@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha tests/**/*.js",
     "watch": "npm run test -- -w",
-    "lint": "eslint --fix --ext .js ./src ./tests",
+    "lint": "eslint --fix --ext .js ./ ./tests",
     "release:major": "./node_modules/.bin/npm-release major",
     "release:minor": "./node_modules/.bin/npm-release minor",
     "release:patch": "./node_modules/.bin/npm-release patch",
