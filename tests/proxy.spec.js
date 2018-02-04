@@ -14,21 +14,21 @@ describe('proxy', function () {
   })
 
   it('add/remove to proxy', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     proxy.remove()
-    assert.equal(adapter.functions().length, 1)
+    assert.equal(adapter.getAdapters().length, 1)
   })
 
   it('add/remove to proxy (using removeIf)', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     proxy.removeIf('test1')
-    assert.equal(adapter.functions().length, 1)
+    assert.equal(adapter.getAdapters().length, 1)
   })
 
   it('add/remove to adapter', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     adapter.remove()
-    assert.equal(adapter.functions().length, 0)
+    assert.equal(adapter.getAdapters().length, 0)
   })
 
   it('proxy should return', function () {

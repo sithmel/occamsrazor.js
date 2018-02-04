@@ -65,9 +65,9 @@ describe('stick', function () {
 
     adapter.stick('match')
     adapter.stick('xxx')
-    assert.equal(adapter._stickyArguments().length, 2)
+    assert.equal(adapter.getEvents().length, 2)
     adapter.unstick('match')
-    assert.equal(adapter._stickyArguments().length, 1)
+    assert.equal(adapter.getEvents().length, 1)
 
     setTimeout(function () {
       adapter.on('match', function () {
@@ -75,6 +75,23 @@ describe('stick', function () {
       })
       adapter.on('notmatch', function () {
         executed += 'D'
+      })
+      setTimeout(function () {
+        assert.equal(executed, 'A')
+        done()
+      }, 4)
+    }, 4)
+  })
+
+  it.skip('must consume', function (done) {
+    var executed = ''
+    adapter.consume('match', function () {
+      executed += 'A'
+    })
+    adapter.stick('match')
+    setTimeout(function () {
+      adapter.consume('match', function () {
+        executed += 'C'
       })
       setTimeout(function () {
         assert.equal(executed, 'A')

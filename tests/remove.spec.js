@@ -13,15 +13,15 @@ describe('remove', function () {
   })
 
   it('removing everything', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     adapter.remove()
-    assert.equal(adapter.functions().length, 0)
+    assert.equal(adapter.getAdapters().length, 0)
   })
 
   it('removing 1 function', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     adapter.remove(f1)
-    assert.equal(adapter.functions().length, 1)
+    assert.equal(adapter.getAdapters().length, 1)
   })
 })
 
@@ -36,14 +36,14 @@ describe('removeIf', function () {
   })
 
   it('removing nothing', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     adapter.removeIf('test3')
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
   })
 
   it('removing 1 function', function () {
-    assert.equal(adapter.functions().length, 2)
+    assert.equal(adapter.getAdapters().length, 2)
     adapter.removeIf('test1')
-    assert.equal(adapter.functions().length, 1)
+    assert.equal(adapter.getAdapters().length, 1)
   })
 })
