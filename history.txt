@@ -1,5 +1,17 @@
 Changelog
 
+8.0.0 (unreleased)
+==================
+- refactoring
+- consume (to finish)
+- asynchronous queuing (todo)
+- update doc (todo)
+
+7.1.0 (2017/12/18)
+==================
+- Added unstick method
+- using trigger, handlers are now running in a different execution frame
+
 7.0.1 (2017/07/10)
 ==================
 - using trigger, handlers are now running in a different execution frame
