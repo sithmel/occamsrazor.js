@@ -3,6 +3,10 @@ var assert = require('chai').assert
 var occamsrazor = require('..')
 
 describe('registry', function () {
+  before(function () {
+    global._occamsrazor_registries = undefined
+  })
+
   it('testing empty registry', function () {
     var test = occamsrazor.registry('main')('test')
     assert.instanceOf(test, Function)

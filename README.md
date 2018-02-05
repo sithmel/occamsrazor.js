@@ -425,12 +425,11 @@ Syntax:
 ```js
 var proxy = funcs.namespace([name]);
 ```
-It returns a namespaced function registry. This is mostly equivalent to the original function registry (you can't call it like a function though, you can use the "adapt" method).
-Every function added through the this object get marked and can get removed easily using remove:
+It returns a namespaced function registry. This is equivalent to the original function registry except that every function added through the this object gets marked and can get removed easily using remove:
 ```js
 funcs.add(...); // this won't be touched
 namespace.add(...); // this will be removed
-namespace.remove(...); // this will be removed
+namespace.remove(...);
 ```
 The name is optional, a random string is used if not defined. You just have to keep the reference.
 
@@ -438,7 +437,7 @@ The name is optional, a random string is used if not defined. You just have to k
 ----------------
 Syntax:
 ```js
-funcs.functions();
+funcs.getAdapters();
 ```
 It exposes the internal registry of all functions. Useful for debugging purposes.
 If you pass arguments to this method, these will be used to filter what functions return.
@@ -463,6 +462,23 @@ Syntax:
 occamsrazor.wrapConstructor(constructorFunction)
 ```
 It transform a constructor function in a simple function that you can call without using "new"
+
+Asynchronous function queuing
+=============================
+Asynchronous function queuing is a pattern to allow loading synchronously only a stub, instead of the whole library. The stub registers all method calls in an hidden array. Then the library loads asynchronously and execute all calls queued. This works only for asynchronous (callback based) methods. Occamsrazor includes a couple of useful modules to implement this pattern. The synchronous library contains, for example:
+```js
+var fakeOccamsrazor = require('occamsrazor/async-func-queue/fake-occamsrazor')
+window.events = fakeOccamsrazor('_private')
+```
+The library loading the whole occamsrazor will be loaded asynchronously and will contain:
+```js
+var occamsrazor = require('occamsrazor')
+var flushQueue = require('occamsrazor/async-func-queue/flush-queue')
+
+window.events = occamsrazor()
+flushQueue('_private', window.events)
+```
+This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, merge
 
 About the name
 ==============

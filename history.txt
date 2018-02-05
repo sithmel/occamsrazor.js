@@ -4,8 +4,7 @@ Changelog
 ==================
 - refactoring
 - consume (to finish)
-- asynchronous queuing (todo)
-- update doc (todo)
+- asynchronous queuing
 
 7.1.0 (2017/12/18)
 ==================
