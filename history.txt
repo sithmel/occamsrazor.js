@@ -1,6 +1,6 @@
 Changelog
 
-8.0.0 (unreleased)
+8.0.0 (2018/02/06)
 ==================
 - refactoring
 - consume
