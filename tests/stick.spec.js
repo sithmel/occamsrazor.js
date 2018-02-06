@@ -83,18 +83,23 @@ describe('stick', function () {
     }, 4)
   })
 
-  it.skip('must consume', function (done) {
+  it('must consume', function (done) {
     var executed = ''
+    adapter.stick('match')
     adapter.consume('match', function () {
       executed += 'A'
     })
     adapter.stick('match')
+    adapter.on('match', function () {
+      executed += 'A' // this is ignored
+    })
+
     setTimeout(function () {
       adapter.consume('match', function () {
         executed += 'C'
       })
       setTimeout(function () {
-        assert.equal(executed, 'A')
+        assert.equal(executed, 'AA')
         done()
       }, 4)
     }, 4)

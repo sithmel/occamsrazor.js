@@ -3,7 +3,7 @@ Changelog
 8.0.0 (unreleased)
 ==================
 - refactoring
-- consume (to finish)
+- consume
 - asynchronous queuing
 
 7.1.0 (2017/12/18)

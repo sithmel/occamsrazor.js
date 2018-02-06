@@ -254,18 +254,41 @@ pubsub.one("selected", has_radius, function (evt, circle) {
 });
 ```
 Usually you'll need to have an event handler attached (with .on) BEFORE triggering it. Some event represent a state change and it is very convenient keeping them published (imagine something like the "ready" jQuery event for example).
-You can publish an event permanently using "stick". This method works like trigger but allows to keep the arguments published, so any new event handler fires immediately:
+You can publish an event permanently using "post". This method works like trigger but allows to keep the arguments published, so any new event handler fires immediately:
 ```js
 pubsub.on("selected", has_radius, function (evt, circle) {
   console.log('Circle is selected and the radius is ', circle.radius);
 });
 
-pubsub.stick("selected", { radius: 10 });
+pubsub.post("selected", { radius: 10 });
 
 pubsub.on("selected", has_radius, function (evt, circle) {
   console.log('This will be fired as well!');
 });
 ```
+You can remove these published event using "unpost", passing a validator that will match the event:
+```js
+pubsub.unpost("selected");
+```
+
+Consume
+=======
+This is a variation of the ".on" that is removing events published with post when matching.
+
+A recap
+=======
+Publish an object:
+
+|         | Returns         | Function executed                         | Objects remains published |
+|---------|-----------------|-------------------------------------------|---------------------------|
+| adapt   | yes             | the most specific matching the validators |           no              |
+| all     | yes (array)     | all matching the validators               |           no              |
+| trigger | no, it is async | all matching the validators               |           no              |
+| post    | no, it is async | all matching the validators               |           yes             |
+
+* add/on: run a function every time validators are matching
+* one: run a function every time validators are matching, then it unregister itself
+* consume: run a function every time validators are matching, but remove a published object
 
 Namespace
 =========
@@ -287,7 +310,7 @@ It works with "removeIf" too.
 
 Context
 =======
-Some methods retain the current context (this). They are: all/trigger, stick, adapt (that is a version of the object invoked without any method). This allows you to call them as methods or using call/apply.
+Some methods retain the current context (this). They are: all/trigger, post, adapt (that is a version of the object invoked without any method). This allows you to call them as methods or using call/apply.
 
 Registries
 ==========
@@ -355,20 +378,20 @@ funcs.trigger([arg1, arg2 ...]);
 it takes 0 or more arguments. It calls all functions that matches, with the given arguments.
 It retains the context (this). It doesn't return the results as it's execution is deferred (using setImmediate).
 
-.stick
+.post (alias .stick)
 ------
 ```js
-funcs.stick([arg1, arg2 ...]);
+funcs.post([arg1, arg2 ...]);
 ```
-It works the same as trigger, the arguments (including the current context "this") are stored forever. When an new function is added (using "add", "on" or "one"), it is executed immediatly (if it matches).
+It works the same as trigger, the arguments (including the current context "this") are stored forever. When an new function is added (using "add", "on",  "one" or "consume"), it is executed immediatly (if it matches).
 
-.unstick
+.unpost (alias .unstick)
 ------
 ```js
-funcs.unstick(validator, validator, validator, ...);
+funcs.unpost(validator, validator, validator, ...);
 ```
 It takes some validators, just like the .add/.on method (but without the callback).
-Every event added with stick mathing those arguments is removed.
+Every event added with post mathing those arguments is removed.
 
 .add (alias .on)
 ----------------
@@ -401,6 +424,10 @@ funcs.remove(); // delete all functions
 ```
 Delete one or all functions from the function registry. If it is called on a namespaced function registry, it removes only the functions added with through that namespace.
 It returns the function registry, or the namespaced function registry (this method can be chained).
+
+.consume
+--------
+The same as .add/.on. Functions registered using "consume" will remove every object published with ".post".
 
 .size
 -----
