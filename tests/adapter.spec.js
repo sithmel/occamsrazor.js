@@ -78,32 +78,6 @@ describe('adapter', function () {
   it('must ignore extra argument', function () {
     assert.equal(player(guitar, 'extra'), 'Strumming with guitar')
   })
-
-  describe('merge adapters', function () {
-    var pianoPlayer, mergedPlayer
-
-    before(function () {
-      pianoPlayer = occamsrazor()
-        .add({keys: undefined}, function () { return 'playing the piano!' })
-      mergedPlayer = pianoPlayer.merge(player)
-    })
-
-    it('must be correct size', function () {
-      assert.equal(player.size(), 2)
-      assert.equal(pianoPlayer.size(), 1)
-      assert.equal(mergedPlayer.size(), 3)
-    })
-
-    it('must not merge in-place', function () {
-      assert.notEqual(pianoPlayer, mergedPlayer)
-      assert.notEqual(player, mergedPlayer)
-    })
-
-    it('must adapt', function () {
-      assert.equal(mergedPlayer(guitar), 'Strumming with guitar')
-      assert.equal(mergedPlayer({keys: 288}), 'playing the piano!')
-    })
-  })
 })
 
 describe('general', function () {
