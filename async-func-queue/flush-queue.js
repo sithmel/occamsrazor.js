@@ -1,10 +1,10 @@
 var globalObj = typeof window === 'undefined' ? global : window
 
-function flushQueue (hiddenPropertyName, realObject) {
+function flushQueue (hiddenPropertyName, objectPropertyName) {
   var q = globalObj[hiddenPropertyName] || []
   delete globalObj[hiddenPropertyName]
   q.forEach(function (o) {
-    realObject[o.funcName].apply(o.ctx, o.args)
+    globalObj[objectPropertyName][o.funcName].apply(o.ctx, o.args)
   })
 }
 

@@ -1,5 +1,6 @@
 /* eslint-env node, mocha */
 var assert = require('chai').assert
+var isNumber = require('occamsrazor-match/extra/isNumber')
 var occamsrazor = require('..')
 
 describe('stick', function () {
@@ -103,5 +104,69 @@ describe('stick', function () {
         done()
       }, 4)
     }, 4)
+  })
+
+  it('must consume only one', function (done) {
+    var executed = ''
+    adapter.stick(3)
+    adapter.stick(2)
+    adapter.stick(1)
+    adapter.consumeOne(isNumber, function (number) {
+      assert.equal(number, 3)
+      executed += 'A'
+    })
+    adapter.consumeOne(isNumber, function (number) {
+      assert.equal(number, 2)
+      executed += 'B'
+    })
+    adapter.consumeOne(isNumber, function (number) {
+      assert.equal(number, 1)
+      executed += 'C'
+      assert.equal(executed, 'ABC')
+      done()
+    })
+  })
+
+  it('must consume only one (2)', function (done) {
+    var executed = ''
+    adapter.stick(3)
+    adapter.stick(2)
+    adapter.consumeOne(isNumber, function (number) {
+      assert.equal(number, 3)
+      executed += 'A'
+    })
+    adapter.consumeOne(isNumber, function (number) {
+      assert.equal(number, 2)
+      executed += 'B'
+    })
+    adapter.consumeOne(isNumber, function (number) {
+      assert.equal(number, 1)
+      executed += 'C'
+      assert.equal(executed, 'ABC')
+      done()
+    })
+    adapter.stick(1)
+  })
+
+  it('must consume only one (sorted)', function (done) {
+    var adapter2 = occamsrazor({ comparator: function (a, b) { return a.args[0] - b.args[0] } })
+    var executed = ''
+    adapter2.stick(3)
+    adapter2.stick(2)
+    adapter2.stick(1)
+    adapter2.consumeOne(isNumber, function (number) {
+      assert.equal(number, 1)
+      executed += 'A'
+    })
+    adapter2.consumeOne(isNumber, function (number) {
+      assert.equal(number, 2)
+      executed += 'B'
+    })
+    adapter2.consumeOne(isNumber, function (number) {
+      assert.equal(number, 3)
+      executed += 'C'
+      assert.equal(executed, 'ABC')
+      done()
+    })
   })
 })

@@ -2,7 +2,7 @@ Occamsrazor
 ===========
 [![Build Status](https://travis-ci.org/sithmel/occamsrazor.js.svg?branch=master)](https://travis-ci.org/sithmel/occamsrazor.js)
 
-Occamsrazor finds the function (or the functions) that matches a list of arguments. It can be be used to write event systems, or to make an application extensible.
+Occamsrazor runs the function (or the functions) that matches a list of arguments. It can be be used to write event systems, or to make an application extensible.
 
 Tutorial
 ========
@@ -266,14 +266,16 @@ pubsub.on("selected", has_radius, function (evt, circle) {
   console.log('This will be fired as well!');
 });
 ```
-You can remove these published event using "unpost", passing a validator that will match the event:
+You can remove these published event using "unpost", passing a validator that will match the arguments:
 ```js
 pubsub.unpost("selected");
 ```
 
-Consume
-=======
-This is a variation of the ".on" that is removing events published with post when matching.
+
+Consume/consumeOne
+==================
+This is a variation of the ".on" that is removing arguments published with post when matching.
+consumeOne removes only the first argument and then it unregister itself.
 
 A recap
 =======
@@ -286,9 +288,10 @@ Publish an object:
 | trigger | no, it is async | all matching the validators               |           no              |
 | post    | no, it is async | all matching the validators               |           yes             |
 
-* add/on: run a function every time validators are matching
-* one: run a function every time validators are matching, then it unregister itself
-* consume: run a function every time validators are matching, but remove a published object
+* add/on: runs a function every time validators are matching
+* one: runs a function the first time validators are matching, then it unregister itself
+* consume: runs a function every time validators are matching, and removes the matching object
+* consumeOne: runs a function the first time validators are matching, and removes the matching object
 
 Namespace
 =========
@@ -347,6 +350,22 @@ or:
 ```js
 var funcs = occamsrazor();
 ```
+It can take an option argument containing an "comparator" function (optional). This is used to keep the posted object in a certain order if you need to implement a priority queue. The comparator take an object with this shape:
+```js
+{
+  args: [...], // array of arguments
+  context: ... // value of "this"
+}
+```
+The comparator works like the one used by the ".sort" array method. For example:
+```js
+var adapters = occamsrazor({
+  comparator: function (a, b) {
+    return a.args[0] - b.args[0]
+  }
+})
+```
+This should sort by the first argument (assuming is a number), from the smallest.
 
 Function registry API
 =====================
@@ -437,14 +456,17 @@ funcs.size();
 ```
 It returns the number of functions in the function registry. If you pass arguments to "size" you will get the number of functions matching those arguments.
 
-.merge
-------
+.consumeOne
+-----------
+The same as .consume, but it executes the function only once.
+
+.size
+-----
 Syntax:
 ```js
-funcs1.merge(funcs2, funcs3, ...);
+funcs.size();
 ```
-It returns a new function registry merging all functions of itself and the input function registries.
-Without arguments is equivalent to clone the function registry.
+It returns the number of functions in the function registry. If you pass arguments to "size" you will get the number of functions matching those arguments.
 
 .namespace (alias .proxy)
 -------------------------
@@ -495,7 +517,13 @@ Asynchronous function queuing
 Asynchronous function queuing is a pattern to allow loading synchronously only a stub, instead of the whole library. The stub registers all method calls in an hidden array. Then the library loads asynchronously and execute all calls queued. This works only for asynchronous (callback based) methods. Occamsrazor includes a couple of useful modules to implement this pattern. The synchronous library contains, for example:
 ```js
 var fakeOccamsrazor = require('occamsrazor/async-func-queue/fake-occamsrazor')
-window.events = fakeOccamsrazor('_private')
+fakeOccamsrazor('_private', 'events')
+```
+This allows to start using occamsrazor with:
+```js
+window.events.on( ... );
+window.events.trigger( ... );
+// etc
 ```
 The library loading the whole occamsrazor will be loaded asynchronously and will contain:
 ```js
@@ -503,9 +531,9 @@ var occamsrazor = require('occamsrazor')
 var flushQueue = require('occamsrazor/async-func-queue/flush-queue')
 
 window.events = occamsrazor()
-flushQueue('_private', window.events)
+flushQueue('_private', 'events')
 ```
-This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, merge
+This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, proxy
 
 About the name
 ==============
