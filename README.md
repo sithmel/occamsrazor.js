@@ -209,7 +209,6 @@ var registry = occamsrazor()
 registry('point', { center: { x: 3, y: 2 }}); // this matches!
 ```
 
-
 Getting all
 ===========
 So far you have used occamsrazor to get the most specific function (the one with the highest score). You can also get all functions matching the validators, no matter what the score is:
@@ -380,6 +379,7 @@ funcs.adapt([arg1, arg2 ...]);
 
 it takes 0 or more arguments. It calls the most specific function with the given arguments and returns its result.
 It retains the context (this). If more than one function matches with the same score it throws an exception.
+If no function match, it returns undefined.
 
 .all (alias .triggerSync)
 ----
@@ -398,14 +398,14 @@ it takes 0 or more arguments. It calls all functions that matches, with the give
 It retains the context (this). It doesn't return the results as it's execution is deferred (using setImmediate).
 
 .post (alias .stick)
-------
+--------------------
 ```js
 funcs.post([arg1, arg2 ...]);
 ```
 It works the same as trigger, the arguments (including the current context "this") are stored forever. When an new function is added (using "add", "on",  "one" or "consume"), it is executed immediatly (if it matches).
 
 .unpost (alias .unstick)
-------
+------------------------
 ```js
 funcs.unpost(validator, validator, validator, ...);
 ```
@@ -482,8 +482,8 @@ namespace.remove(...);
 ```
 The name is optional, a random string is used if not defined. You just have to keep the reference.
 
-.functions
-----------------
+.getAdapters
+------------
 Syntax:
 ```js
 funcs.getAdapters();
@@ -533,7 +533,7 @@ var flushQueue = require('occamsrazor/async-func-queue/flush-queue')
 window.events = occamsrazor()
 flushQueue('_private', 'events')
 ```
-This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, proxy
+This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, proxy, batch
 
 About the name
 ==============

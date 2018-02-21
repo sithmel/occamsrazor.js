@@ -115,11 +115,6 @@ describe('general', function () {
     assert.throws(test, 'Occamsrazor (get): More than one adapter fits')
   })
 
-  it('must throw if no matches', function () {
-    var test = occamsrazor()
-    assert.throws(test, 'Occamsrazor (get): Function not found')
-  })
-
   describe('adapter hierarchy', function () {
     var isAnything, isNumber,
       notValid, notFound, square,
