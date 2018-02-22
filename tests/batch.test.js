@@ -65,8 +65,25 @@ describe('batch', function () {
       return n + 10
     })
     var batch = adapter.batch()
-    batch.queue.call({}, 2)
-    batch.queue.call({}, 3)
+    batch.queue(2)
+    batch.queue(3)
     assert.deepEqual(batch.all(), [12, 4, 13, 9])
+  })
+
+  it('triggers all handlers', function () {
+    var adapter = occamsrazor()
+    adapter.on(isNumber, function (n) {
+      return n * n
+    })
+    adapter.on(isNumber, function (n) {
+      return n + 10
+    })
+    var batch = adapter.batch()
+    batch.queue(2)
+    batch.queue(3)
+    batch.trigger(function (err, res) {
+      assert.equal(err, null)
+      assert.deepEqual(res, [12, 4, 13, 9])
+    })
   })
 })
