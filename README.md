@@ -209,7 +209,6 @@ var registry = occamsrazor()
 registry('point', { center: { x: 3, y: 2 }}); // this matches!
 ```
 
-
 Getting all
 ===========
 So far you have used occamsrazor to get the most specific function (the one with the highest score). You can also get all functions matching the validators, no matter what the score is:
@@ -271,7 +270,6 @@ You can remove these published event using "unpost", passing a validator that wi
 pubsub.unpost("selected");
 ```
 
-
 Consume/consumeOne
 ==================
 This is a variation of the ".on" that is removing arguments published with post when matching.
@@ -292,6 +290,36 @@ Publish an object:
 * one: runs a function the first time validators are matching, then it unregister itself
 * consume: runs a function every time validators are matching, and removes the matching object
 * consumeOne: runs a function the first time validators are matching, and removes the matching object
+
+Batches
+=======
+This feature allows to queue many "messages" (calls to trigger/all) and then trigger them all at once.
+```js
+var events = occamsrazor();
+
+events.on(isNumber, function (n) {
+  return n * n;
+})
+
+var batch = events.batch();
+batch
+  .queue(2)
+  .queue(3);
+
+var results = batch.all(); // [4, 9])
+```
+You can queue messages using queue (you can chain that), and use .all (or the alias triggerSync) to call them in synchronously.
+You can also use trigger to call them asynchronously:
+
+```js
+batch.trigger(function (err, res) {
+  // if any function throws an exception, this is captured and
+  // res is [4, 9])
+});
+```
+Trigger takes a callback that returns the result (or, in case an error).
+
+Important detail: using the events are triggered either synchronously (all/triggerSync) or asynchronously (trigger) in the same microtask. If any function throws an exception the execution stops.
 
 Namespace
 =========
@@ -380,6 +408,7 @@ funcs.adapt([arg1, arg2 ...]);
 
 it takes 0 or more arguments. It calls the most specific function with the given arguments and returns its result.
 It retains the context (this). If more than one function matches with the same score it throws an exception.
+If no function match, it returns undefined.
 
 .all (alias .triggerSync)
 ----
@@ -398,14 +427,14 @@ it takes 0 or more arguments. It calls all functions that matches, with the give
 It retains the context (this). It doesn't return the results as it's execution is deferred (using setImmediate).
 
 .post (alias .stick)
-------
+--------------------
 ```js
 funcs.post([arg1, arg2 ...]);
 ```
 It works the same as trigger, the arguments (including the current context "this") are stored forever. When an new function is added (using "add", "on",  "one" or "consume"), it is executed immediatly (if it matches).
 
 .unpost (alias .unstick)
-------
+------------------------
 ```js
 funcs.unpost(validator, validator, validator, ...);
 ```
@@ -482,14 +511,68 @@ namespace.remove(...);
 ```
 The name is optional, a random string is used if not defined. You just have to keep the reference.
 
-.functions
-----------------
+.getAdapters
+------------
 Syntax:
 ```js
 funcs.getAdapters();
 ```
 It exposes the internal registry of all functions. Useful for debugging purposes.
 If you pass arguments to this method, these will be used to filter what functions return.
+
+
+.batch
+------
+It returns a batch object.
+Syntax:
+```js
+var batch = funcs.batch();
+```
+
+batch
+=====
+This object allows to queue multiple calls.
+
+.queue
+------
+Queue arguments in the batch.
+
+Syntax:
+```js
+batch.queue(... args ...);
+```
+This method returns the batch (it is chainable).
+If a comparator is set, the queue respect that order.
+
+.adapt
+------
+It takes any item on the queue, search the most specific function, and execute that function with the arguments. It returns an array with the results. If a group of arguments doesn't match any function, it returns undefined (for that item).
+As usual if a group of arguments matches multiple times with the same score, it throws an exception.
+Syntax:
+```js
+var results = batch.adapt();
+```
+
+.all/.triggerSync
+-----------------
+It takes any item on the queue, search the all the functions matching these arguments, and execute those function with the arguments. It returns an array with the results (flattened). If a group of arguments doesn't match any function, it returns undefined (for that item).
+Syntax:
+```js
+var results = batch.all();
+```
+
+.trigger
+--------
+It takes any item on the queue, search the all the functions matching these arguments, and execute those function with the arguments.
+The functions are executed, in the next tick.
+It takes an optional callback, returning the error (or null) and an array with the results (flattened). If a group of arguments doesn't match any function, it returns undefined (for that item).
+Syntax:
+```js
+batch.trigger(function (err, results) {
+  ...
+});
+```
+It returns the occamsrazor object.
 
 registry
 ========
@@ -533,7 +616,7 @@ var flushQueue = require('occamsrazor/async-func-queue/flush-queue')
 window.events = occamsrazor()
 flushQueue('_private', 'events')
 ```
-This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, proxy
+This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, proxy, batch
 
 About the name
 ==============

@@ -1,12 +1,16 @@
 Changelog
 
+9.1.0 (2018/02/22)
+==================
+- fix: it doesn't throw an exception when a single adapter is not found. Just undefined
+- added "batch" feature
+
 9.0.0 (2018/02/12)
 ==================
 - removed merge method (broken and not useful)
 - fixed async-func-queue corner case
 - added consumeOne method
 - introduced a comparator to set the order of the posted events
-- changed constructor API (using an object)
 
 8.0.0 (2018/02/06)
 ==================
