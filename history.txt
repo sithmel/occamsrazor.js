@@ -1,5 +1,9 @@
 Changelog
 
+9.1.1 (2018/02/23)
+==================
+- fix: batch queue empties after execution
+
 9.1.0 (2018/02/22)
 ==================
 - fix: it doesn't throw an exception when a single adapter is not found. Just undefined

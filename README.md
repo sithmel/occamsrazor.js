@@ -318,8 +318,29 @@ batch.trigger(function (err, res) {
 });
 ```
 Trigger takes a callback that returns the result (or, in case an error).
-
+Calling trigger/all empties the batch. It can be reused to queue other messages.
 Important detail: using the events are triggered either synchronously (all/triggerSync) or asynchronously (trigger) in the same microtask. If any function throws an exception the execution stops.
+
+A classic use case is to collect a sequence of messages and then executing them on request animation frame.
+
+```js
+var events = occamsrazor();
+var batch = events.batch();
+
+function mainLoop() {
+  batch.triggerSync();
+  requestAnimationFrame(mainLoop);
+}
+requestAnimationFrame(mainLoop);
+
+document.addEventListener('keydown', function(event) {
+  batch.queue('keydown', event.keyCode);
+});
+
+events.on('keydown', 38, function () {
+  ... dealing with up arrow ...
+})
+```
 
 Namespace
 =========
@@ -543,6 +564,10 @@ batch.queue(... args ...);
 ```
 This method returns the batch (it is chainable).
 If a comparator is set, the queue respect that order.
+It accepts to be bound to a context.
+```js
+batch.queue.apply(something, [...args...]))
+```
 
 .adapt
 ------
@@ -552,6 +577,7 @@ Syntax:
 ```js
 var results = batch.adapt();
 ```
+It empties the queue.
 
 .all/.triggerSync
 -----------------
@@ -560,6 +586,7 @@ Syntax:
 ```js
 var results = batch.all();
 ```
+It empties the queue.
 
 .trigger
 --------
@@ -572,7 +599,7 @@ batch.trigger(function (err, results) {
   ...
 });
 ```
-It returns the occamsrazor object.
+It empties the queue, and returns the adapter object.
 
 registry
 ========

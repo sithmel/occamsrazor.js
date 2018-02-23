@@ -56,6 +56,16 @@ describe('batch', function () {
     assert.deepEqual(batch.adapt(), [4, undefined])
   })
 
+  it('return adapters (empty array)', function () {
+    var adapter = occamsrazor()
+    adapter.add(isNumber, function (n) {
+      return n * n
+    })
+    var batch = adapter.batch()
+    assert.deepEqual(batch.adapt(), [])
+    assert.deepEqual(batch.all(), [])
+  })
+
   it('return all adapters', function () {
     var adapter = occamsrazor()
     adapter.add(isNumber, function (n) {
