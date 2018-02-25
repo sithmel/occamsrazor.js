@@ -20,7 +20,7 @@ describe('binaryInsert', function () {
 
   it('insert at the beginning (2)', function () {
     ut.binaryInsert(array, 10, comparator)
-    assert.deepEqual(array, [10, 10, 12, 12, 13, 15])
+    assert.deepEqual(array, [10, 12, 12, 13, 15])
   })
 
   it('insert in the middle', function () {
@@ -30,12 +30,12 @@ describe('binaryInsert', function () {
 
   it('insert in the middle(2)', function () {
     ut.binaryInsert(array, 13, comparator)
-    assert.deepEqual(array, [10, 12, 12, 13, 13, 15])
+    assert.deepEqual(array, [10, 12, 12, 13, 15])
   })
 
   it('insert in the middle (3)', function () {
     ut.binaryInsert(array, 12, comparator)
-    assert.deepEqual(array, [10, 12, 12, 12, 13, 15])
+    assert.deepEqual(array, [10, 12, 12, 13, 15])
   })
 
   it('insert at the end', function () {
@@ -45,7 +45,7 @@ describe('binaryInsert', function () {
 
   it('insert at the end', function () {
     ut.binaryInsert(array, 15, comparator)
-    assert.deepEqual(array, [10, 12, 12, 13, 15, 15])
+    assert.deepEqual(array, [10, 12, 12, 13, 15])
   })
 
   it('insert empty', function () {

@@ -339,7 +339,7 @@ document.addEventListener('keydown', function(event) {
 
 events.on('keydown', 38, function () {
   ... dealing with up arrow ...
-})
+});
 ```
 
 Namespace
@@ -415,6 +415,8 @@ var adapters = occamsrazor({
 })
 ```
 This should sort by the first argument (assuming is a number), from the smallest.
+The comparator works in a special way when returning 0 (items with same priority): it doesn't proceed on storing the new event. You can use this special behaviour to remove duplicated events in the queue.
+
 
 Function registry API
 =====================

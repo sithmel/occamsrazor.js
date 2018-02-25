@@ -3,6 +3,7 @@ Changelog
 9.1.1 (2018/02/23)
 ==================
 - fix: batch queue empties after execution
+- fix: remove duplicated events when comparator returns 0
 
 9.1.0 (2018/02/22)
 ==================
