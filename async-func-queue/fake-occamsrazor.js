@@ -1,6 +1,5 @@
-var globalObj = typeof window === 'undefined' ? global : window
-
-function buildFakeObject (hiddenPropertyName, objectPropertyName, funcs) {
+function buildFakeObject (hiddenPropertyName, objectPropertyName, globalObj, funcs) {
+  globalObj = globalObj || (typeof window === 'undefined' ? global : window)
   var fakeObj = {}
   funcs = Array.isArray(funcs) ? funcs : [funcs]
   var q = globalObj[hiddenPropertyName] = []
@@ -20,16 +19,16 @@ function buildFakeObject (hiddenPropertyName, objectPropertyName, funcs) {
   return fakeObj
 }
 
-var attrs = [
+var defaultAttrs = [
   'add', 'on', 'one', 'remove',
-  'off', 'removeIf', 'trigger',
-  'stick', 'unstick', 'consume',
+  'off', 'removeIf', 'trigger', 'triggerSync',
+  'stick', 'unstick', 'post', 'unpost', 'consume',
   'consumeOne'
 ]
-// no: adapt, all, triggerSync, size, merge
+// no: adapt, all, size, batch
 
-function fakeOccamsrazor (hiddenPropertyName, objectPropertyName) {
-  return buildFakeObject(hiddenPropertyName, objectPropertyName, attrs)
+function fakeOccamsrazor (hiddenPropertyName, objectPropertyName, globalObj, customAttrs) {
+  return buildFakeObject(hiddenPropertyName, objectPropertyName, globalObj, defaultAttrs.concat(customAttrs))
 }
 
 module.exports = fakeOccamsrazor

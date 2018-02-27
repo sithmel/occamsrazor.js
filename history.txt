@@ -1,5 +1,10 @@
 Changelog
 
+9.1.2 (2018/02/27)
+==================
+- fix: registry now supports options
+- async func queue, it now supports extra methods and global namespace
+
 9.1.1 (2018/02/23)
 ==================
 - fix: batch queue empties after execution

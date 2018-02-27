@@ -628,8 +628,8 @@ Asynchronous function queuing
 =============================
 Asynchronous function queuing is a pattern to allow loading synchronously only a stub, instead of the whole library. The stub registers all method calls in an hidden array. Then the library loads asynchronously and execute all calls queued. This works only for asynchronous (callback based) methods. Occamsrazor includes a couple of useful modules to implement this pattern. The synchronous library contains, for example:
 ```js
-var fakeOccamsrazor = require('occamsrazor/async-func-queue/fake-occamsrazor')
-fakeOccamsrazor('_private', 'events')
+var fakeOccamsrazor = require('occamsrazor/async-func-queue/fake-occamsrazor');
+fakeOccamsrazor('_private', 'events');
 ```
 This allows to start using occamsrazor with:
 ```js
@@ -639,11 +639,11 @@ window.events.trigger( ... );
 ```
 The library loading the whole occamsrazor will be loaded asynchronously and will contain:
 ```js
-var occamsrazor = require('occamsrazor')
-var flushQueue = require('occamsrazor/async-func-queue/flush-queue')
+var occamsrazor = require('occamsrazor');
+var flushQueue = require('occamsrazor/async-func-queue/flush-queue');
 
-window.events = occamsrazor()
-flushQueue('_private', 'events')
+window.events = occamsrazor();
+flushQueue('_private', 'events');
 ```
 This will work with all methods returning asynchronously. So these won't work: adapt, all, triggerSync, size, proxy, batch
 
