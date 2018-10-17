@@ -1,8 +1,9 @@
 Changelog
 
-9.1.4 (2018/10/17)
+9.1.5 (2018/10/17)
 ==================
 - now using stable sort on registry. That makes output more predictable
+- fixing test error
 
 9.1.3 (2018/02/27)
 ==================
