@@ -80,7 +80,7 @@ describe('batch', function () {
     assert.deepEqual(batch.all(), [4, 12, 9, 13])
   })
 
-  it('triggers all handlers', function () {
+  it('triggers all handlers', function (done) {
     var adapter = occamsrazor()
     adapter.on(isNumber, function (n) {
       return n * n
@@ -93,7 +93,8 @@ describe('batch', function () {
     batch.queue(3)
     batch.trigger(function (err, res) {
       assert.equal(err, null)
-      assert.deepEqual(res, [12, 4, 13, 9])
+      assert.deepEqual(res, [4, 12, 9, 13])
+      done()
     })
   })
 })
