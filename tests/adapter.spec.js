@@ -191,3 +191,31 @@ describe('general', function () {
     })
   })
 })
+
+describe('sort stability', function () {
+  var registry
+  before(function () {
+    var isNumber = validator().match(function isNumber (obj) {
+      return typeof obj === 'number' && !isNaN(obj)
+    })
+
+    registry = occamsrazor()
+      .add(isNumber, (a) => a * 1)
+      .add(isNumber, (a) => a * 2)
+      .add(isNumber, (a) => a * 3)
+      .add(isNumber, (a) => a * 4)
+      .add(isNumber, (a) => a * 5)
+      .add(isNumber, (a) => a * 6)
+      .add(isNumber, (a) => a * 7)
+      .add(isNumber, (a) => a * 8)
+      .add(isNumber, (a) => a * 9)
+      .add(isNumber, (a) => a * 10)
+      .add(isNumber, (a) => a * 11)
+  })
+
+  it('can be inspected', function () {
+    var all = registry.all(1)
+    assert.equal(all.length, 11)
+    assert.deepEqual(all, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  })
+})

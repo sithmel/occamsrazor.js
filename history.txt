@@ -1,5 +1,9 @@
 Changelog
 
+9.1.4 (2018/10/17)
+==================
+- now using stable sort on registry. That makes output more predictable
+
 9.1.3 (2018/02/27)
 ==================
 - fix: registry now supports options

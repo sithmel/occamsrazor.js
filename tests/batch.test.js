@@ -77,7 +77,7 @@ describe('batch', function () {
     var batch = adapter.batch()
     batch.queue(2)
     batch.queue(3)
-    assert.deepEqual(batch.all(), [12, 4, 13, 9])
+    assert.deepEqual(batch.all(), [4, 12, 9, 13])
   })
 
   it('triggers all handlers', function () {

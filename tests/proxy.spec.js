@@ -32,11 +32,11 @@ describe('proxy', function () {
   })
 
   it('proxy should return', function () {
-    assert.deepEqual(proxy.all('test1'), [2, 1])
+    assert.deepEqual(proxy.all('test1'), [1, 2])
   })
 
   it('adapter should return', function () {
-    assert.deepEqual(adapter.all('test1'), [2, 1])
+    assert.deepEqual(adapter.all('test1'), [1, 2])
   })
 
   it('proxy should return proxy on matching', function () {

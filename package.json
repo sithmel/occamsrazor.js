@@ -7,9 +7,6 @@
     "test": "mocha tests/**/*.js",
     "watch": "npm run test -- -w",
     "lint": "eslint --fix --ext .js ./ ./tests",
-    "release:major": "./node_modules/.bin/npm-release major",
-    "release:minor": "./node_modules/.bin/npm-release minor",
-    "release:patch": "./node_modules/.bin/npm-release patch",
     "precommit": "npm run lint",
     "prepush": "npm run test"
   },
@@ -35,11 +32,11 @@
     "eslint-plugin-standard": "^3.0.1",
     "husky": "^0.14.3",
     "mocha": "^5.0.0",
-    "npm-release": "^1.0.0",
     "occamsrazor-match": "^4.1.0"
   },
   "dependencies": {
     "occamsrazor-validator": "^9.0.0",
-    "setimmediate": "^1.0.5"
+    "setimmediate": "^1.0.5",
+    "stable": "^0.1.8"
   }
 }
