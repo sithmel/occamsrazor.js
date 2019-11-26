@@ -4,9 +4,9 @@
   "description": "A plugin system for Javascript",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/**/*.js",
+    "test": "mocha",
     "watch": "npm run test -- -w",
-    "lint": "eslint --fix --ext .js ./ ./tests",
+    "lint": "eslint --fix --ext .js ./ ./test",
     "precommit": "npm run lint",
     "prepush": "npm run test"
   },
