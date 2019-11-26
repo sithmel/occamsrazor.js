@@ -1,6 +1,6 @@
 {
   "name": "occamsrazor",
-  "version": "9.1.8",
+  "version": "9.1.9",
   "description": "A plugin system for Javascript",
   "main": "index.js",
   "scripts": {
