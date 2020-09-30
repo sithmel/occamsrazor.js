@@ -1,4 +1,4 @@
-Occamsrazor
+RealFacts
 ===========
 [![Build Status](https://travis-ci.org/sithmel/occamsrazor.js.svg?branch=master)](https://travis-ci.org/sithmel/occamsrazor.js)
 
